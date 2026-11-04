@@ -172,4 +172,3 @@ else:
     link_c1, link_c2, link_c3, link_c4 = st.columns(4)
     with link_c1: st.link_button("🌐 تابعنا على صفحة فيسبوك", fb_link, use_container_width=True)
     with link_c2: st.link_button("🎵 تابعنا على حساب تيك توك", tiktok_link, use_container_width=True)
-
