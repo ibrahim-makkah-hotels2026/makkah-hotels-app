@@ -8,7 +8,7 @@ import time
 
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
 
-# 🔒 جدار حماية لمنع فضول الزوار وإخفاء شريط جيت هاب العلوي وعلامة القط نهائياً
+# 🔒 جدار حماية سري لإخفاء شريط جيت هاب وعلامة القط نهائياً عن الزوار لحظر فضولهم
 st.markdown("<style>#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;}</style>", unsafe_allow_html=True)
 st.title("🕋 النظام المتكامل لإدارة وسائل نقل وفنادق الحرم المكي الشريف")
 
@@ -29,8 +29,15 @@ def load_messages():
 
 df = load_current_data()
 
-# --- 🔐 شريط الإدارة وتصفية البحث الجانبي باليسار كامل ومثبت ---
-st.sidebar.header("🔐 صلاحيات النظام")
+# --- 🔍 شريط البحث الجانبي وخانة دخول الأدمن كما كانت في البداية تماماً ---
+st.sidebar.header("🔍 خيارات البحث والتصفية")
+search_query = st.sidebar.text_input("ابحث باسم الفندق:")
+selected_district = st.sidebar.multiselect("تصفية حسب الحي/المنطقة:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else)
+max_distance = st.sidebar.slider("أقصى مسافة عن الحرم (كم):", 0.0, 5.0, 5.0, 0.1)
+shuttle_only = st.sidebar.checkbox("عرض الفنادق التي توفر حافلات نقل فقط")
+
+st.sidebar.markdown("---")
+st.sidebar.header("🔐 تسجيل دخول الإدارة")
 if "logged_in" not in st.session_state: st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
@@ -41,13 +48,6 @@ else:
     admin_password = st.sidebar.text_input("أدخل كلمة مرور المدير لتعديل البيانات:", type="password")
     if admin_password == "1234": st.session_state["logged_in"] = True; st.rerun()
     st.sidebar.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (عرض فقط)")
-
-st.sidebar.markdown("---")
-st.sidebar.header("🔍 خيارات البحث والتصفية")
-search_query = st.sidebar.text_input("ابحث باسم الفندق:")
-selected_district = st.sidebar.multiselect("تصفية حسب الحي:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else [])
-max_distance = st.sidebar.slider("أقصى مسافة (كم):", 0.0, 5.0, 5.0, 0.1)
-shuttle_only = st.sidebar.checkbox("الفنادق التي توفر حافلات فقط")
 
 filtered_df = df.copy()
 if 'المسافة إلى الحرم (كم)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المسافة إلى الحرم (كم)'] <= max_distance]
