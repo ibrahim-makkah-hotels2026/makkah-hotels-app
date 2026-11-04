@@ -9,7 +9,7 @@ import time
 
 # إعداد واجهة الصفحة
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", layout="wide")
-st.title("🏨 النظام المتكامل لإدارة وسائل نقل وفنادق الحرم المكي الشريف")
+st.title("🕋النظام المتكامل لإدارة وسائل نقل وفنادق الحرم المكي الشريف")
 
 excel_filename = "hotel_transport_data_v2.xlsx"
 
