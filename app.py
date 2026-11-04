@@ -42,7 +42,7 @@ if selected_district:
     filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
 if shuttle_only:
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
-
+is_admin = (admin_password == "2351027")
 # عرض الإحصائيات في الأعلى
 col1, col2, col3 = st.columns(3)
 col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
