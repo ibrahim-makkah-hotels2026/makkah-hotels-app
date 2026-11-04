@@ -54,7 +54,7 @@ def load_messages():
 
 df = load_current_data()
 
-# --- 🔐 جدار حماية الصلاحيات الصارم (الرقم السري 1234) ---
+# --- 🔐 جدار حماية الصلاحيات (الرقم السري 1234) ---
 st.sidebar.header("🔐 تسجيل دخول الإدارة")
 admin_password = st.sidebar.text_input("أدخل كلمة مرور المدير لتعديل البيانات:", type="password")
 is_admin = (admin_password == "1234") 
@@ -67,12 +67,15 @@ else:
 st.sidebar.markdown("---")
 st.sidebar.header("🔍 خيارات البحث والتصفية")
 search_query = st.sidebar.text_input("ابحث باسم الفندق:")
-selected_district = st.sidebar.multiselect("تصفية حسب الحي:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else [])
+
+district_options = df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else []
+selected_district = st.sidebar.multiselect("تصفية حسب الحي:", options=district_options)
 max_distance = st.sidebar.slider("أقصى مسافة (كم):", 0.0, 5.0, 5.0, 0.1)
 shuttle_only = st.sidebar.checkbox("الفنادق التي توفر حافلات فقط")
 
+# تطبيق خيارات التصفية الجديدة
 filtered_df = df.copy()
-if 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
+if 'المسافة إلى الحرم (كم)' in filtered_df.columns:
     filtered_df = filtered_df[filtered_df['المسافة إلى الحرم (كم)'] <= max_distance]
 if search_query and 'اسم الفندق' in filtered_df.columns: 
     filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
@@ -82,11 +85,12 @@ if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.column
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
 col1, col2, col3 = st.columns(3)
-col1.metric("📊 إجمالي الفنادق", len(filtered_df))
-if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
-    col2.metric("📍 أقرب مسافة", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
-    col3.metric("🚌 فنادق توفر حافلات", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
+col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
+if not filtered_df.empty:
+    if 'المسافة إلى الحرم (كم)' in filtered_df.columns:
+        col2.metric("📍 أقرب مسافة", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
+    if 'توفر حافلة نقل (Shuttle)' in filtered_df.columns:
+        col3.metric("🚌 فنادق توفر حافلات", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
 
 col_table, col_map = st.columns(2)
 with col_table:
@@ -164,7 +168,8 @@ if is_admin:
                     st.error(f"خطأ: {e}")
     with c_edit:
         st.subheader("🎯 تعديل موقع فندق يدوياً")
-        hotel_to_update = st.selectbox("🎯 اختر الفندق لتعديل مكانه:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
+        hotel_options = df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else []
+        hotel_to_update = st.selectbox("🎯 اختر الفندق لتعديل مكانه:", options=hotel_options)
         if st.button("🎯 تحديث موقع الفندق إلى النقطة المحددة"):
             cdf = load_current_data()
             cdf.loc[cdf['اسم الفندق'] == hotel_to_update, ['latitude', 'longitude']] = [clicked_lat, clicked_lon]
@@ -173,7 +178,8 @@ if is_admin:
             st.rerun()
     with c_del:
         st.subheader("🗑️ حذف فندق من القائمة")
-        hotel_to_delete = st.selectbox("❌ اختر الفندق لحذفه نهائياً:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
+        hotel_options_del = df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else []
+        hotel_to_delete = st.selectbox("❌ اختر الفندق لحذفه نهائياً:", options=hotel_options_del)
         if st.button("🗑️ تأكيد الحذف فوراً"):
             cdf = load_current_data()
             cdf[cdf["اسم الفندق"] != hotel_to_delete].to_excel(excel_filename, index=False)
@@ -209,7 +215,8 @@ else:
     
     with visitor_c1:
         st.subheader("💬 إضافة تعليق ومراجعة لفندق")
-        v_hotel = st.selectbox("🎯 اختر الفندق المراد تقييمه:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
+        hotel_options_vis = df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else []
+        v_hotel = st.selectbox("🎯 اختر الفندق المراد تقييمه:", options=hotel_options_vis)
         v_rating = st.select_slider("⭐ اختر تقييمك للفندق:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"])
         v_comment = st.text_area("✍️ اكتب مراجعتك أو تعليقك هنا:", key="visitor_comment_input")
         
