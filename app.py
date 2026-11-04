@@ -169,3 +169,35 @@ else:
     with visitor_c1:
         st.subheader("💬 إضافة تعليق ومراجعة لفندق")
         v_hotel = st.selectbox("🎯 اختر الفندق المراد تقييمه:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
+
+v_rating = st.select_slider("⭐ اختر تقييمك للفندق:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"])
+v_comment = st.text_area("✍️ اكتب مراجعتك أو تعليقك هنا:", key="visitor_comment_input")
+if st.button("💬 نشر وإرسال التعليق فوراً", use_container_width=True):
+if v_comment.strip() == "": st.error("⚠️ فضلاً، اكتب نص تعليقك أولاً.")
+else:
+df_c = load_comments()
+new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
+pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False)
+st.success("🎉 شكرًا لك! تم تسجيل تعليقك بنجاح.")
+st.balloons()
+time.sleep(1)
+st.rerun()
+with visitor_c2:
+st.subheader("📩 إرسال رسالة مباشرة إلى الإدارة")
+v_name = st.text_input("✍️ اسمك الموقر (اختياري):", placeholder="مثال: معتمر من ليبيا")
+v_msg = st.text_area("✉️ اكتب نص رسالتك أو استفسارك هنا:", key="visitor_message_input")
+if st.button("🚀 إرسال الرسالة إلى المدير فوراً", use_container_width=True):
+if v_msg.strip() == "": st.error("⚠️ فضلاً، اكتب نص رسالتك أولاً.")
+else:
+df_m = load_messages()
+sender = v_name.strip() if v_name.strip() != "" else "زائر مجهول"
+new_m = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الاسم": sender, "نص الرسالة": v_msg}
+pd.concat([df_m, pd.DataFrame([new_m])], ignore_index=True).to_excel(messages_filename, index=False)
+st.success("📥 تم إرسال رسالتك بنجاح وسيتطلع عليها المدير في لوحة التحكم.")
+st.balloons()
+time.sleep(1)
+st.rerun()
+st.sidebar.markdown("---")
+if os.path.exists(excel_filename):
+with open(excel_filename, "rb") as file:
+st.sidebar.download_button(label="📥 تنزيل جدول الفنادق كملف Excel", data=file, file_name=excel_filename, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
