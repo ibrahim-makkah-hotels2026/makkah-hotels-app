@@ -13,7 +13,6 @@ excel_filename = "hotel_transport_data_v2.xlsx"
 comments_filename = "hotel_visitor_comments.xlsx"
 messages_filename = "hotel_visitor_messages.xlsx"
 
-# التحقق من وجود ملف الإكسيل الرئيسي للفنادق أو إنشائه
 def load_current_data():
     if os.path.exists(excel_filename): return pd.read_excel(excel_filename)
     else:
@@ -37,7 +36,6 @@ def load_messages():
 
 df = load_current_data()
 
-# --- 🔐 جدار حماية الصلاحيات (الرقم السري 1234) ---
 st.sidebar.header("🔐 تسجيل دخول الإدارة")
 admin_password = st.sidebar.text_input("أدخل كلمة مرور المدير لتعديل البيانات:", type="password")
 is_admin = (admin_password == "1234") 
@@ -77,7 +75,7 @@ with col_map:
     
     for idx, row in filtered_df.iterrows():
         if pd.notna(row['latitude']) and pd.notna(row['longitude']):
-            color = "green" if row['توفر حافلة نقل (Shuttle)'] == "نعم" else "orange"
+            color = "green" if row['توفر hافلة نقل (Shuttle)'] == "نعم" else "orange"
             folium.Marker([row['latitude'], row['longitude']], popup=f"<b>{row['اسم الفندق']}</b>", icon=folium.Icon(color=color, icon="info-sign")).add_to(m)
             
     map_data = st_folium(m, width=600, height=400, returned_objects=["last_clicked"])
@@ -95,7 +93,6 @@ if not filtered_df.empty:
 st.markdown("---")
 
 if is_admin:
-    # 🔴 شاشة الإدارة المخفية
     st.subheader("🛠️ لوحة تحكم المدير (تعديل وحذف وقراءة الرسائل والتعليقات الواردة)")
     c_form, c_edit, c_del = st.columns(3)
     with c_form:
@@ -142,20 +139,16 @@ if is_admin:
     with adm_col1: st.subheader("💬 تعليقات وتقييمات الفنادق الواردة"); st.dataframe(load_comments(), use_container_width=True)
     with adm_col2: st.subheader("📩 رسائل واستفسارات الزوار المباشرة"); st.dataframe(load_messages(), use_container_width=True)
 else:
-    # 🟢 واجهة الزائر العامة والمعتمرين المحدثة بالروابط الحقيقية لشركة طريق الميقات
     st.subheader("🤝 لوحة تواصل الزوار والروابط الاجتماعية الرسمية لشركة طريق الميقات")
-    
-    # 🔗 تم ربط حسابات فرع 11 يونيو الدقيقة والحقيقية هنا بنجاح
-    fb_link = "https://www.facebook.com/share/1HcwLvgxRb/"
+    fb_link = "https://facebook.com"
     tiktok_link = "https://tiktok.com"
-    maps_link = "https://maps.app.goo.gl/DB4Af4wDcrZkr3Ee6?g_st=awb"
+    maps_link = "https://goo.gl"
     
-    link_c1, link_c2, link_c3, link_c4 = st.columns([1,1,1,0.5])
+    link_c1, link_c2, link_c3, link_c4 = st.columns(4)
     with link_c1: st.link_button("🌐 تابعنا على صفحة فيسبوك", fb_link, use_container_width=True)
     with link_c2: st.link_button("🎵 تابعنا على حساب تيك توك", tiktok_link, use_container_width=True)
     with link_c3: st.link_button("📍 زيارة موقعنا", maps_link, use_container_width=True)
     with link_c4: 
-        # 👍 زر الإعجاب الحصري والسريع بنقرة اليد للزوار
         if st.button("👍 الإعجاب", use_container_width=True):
             st.toast("❤️ شكرًا لك على إعجابك وتثمينك لخدمات شركة طريق الميقات فرع 11 يونيو!")
             st.balloons()
@@ -173,3 +166,9 @@ else:
                 df_c = load_comments()
                 new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
                 pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False)
+                st.success("🎉 شكرًا لك! تم تسجيل تعليقك بنجاح.")
+                st.balloons()
+    with visitor_c2:
+        st.subheader("📩 إرسال رسالة مباشرة إلى الإدارة")
+        v_name = st.text_input("✍️ اسمك الموقر (اختياري):", placeholder="مثال: زائر من ليبيا")
+        v_msg = st.text_area("✉️ اكتب نص رسالتك أو استفسارك هنا:")
