@@ -172,8 +172,8 @@ else:
 
 v_rating = st.select_slider("⭐ اختر تقييمك للفندق:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"])
 v_comment = st.text_area("✍️ اكتب مراجعتك أو تعليقك هنا:", key="visitor_comment_input")
-if st.button("💬 نشر وإرسال التعليق فوراً", use_container_width=True):
-if v_comment.strip() == "": st.error("⚠️ فضلاً، اكتب نص تعليقك أولاً.")
+if v_comment.strip() == "":
+    st.error("⚠️ فضلاً، اكتب نص تعليقك أولاً.")
 else:
 df_c = load_comments()
 new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
