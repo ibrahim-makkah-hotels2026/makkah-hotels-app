@@ -1,4 +1,23 @@
 import streamlit as st
+
+# 🔒 جدار الأمان الذكي: يحقن كود حظر وإخفاء لعلامة القط وشريط جيت هاب والخيارات السحابية تماماً عن الهواتف والزوار
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    header {visibility: hidden !important;}
+    .viewerBadge_container__16S6S {display: none !important;}
+    .viewerBadge_badge__16S6S {display: none !important;}
+    stDeployButton {display: none !important;}
+    button[title="View source code"] {display: none !important;}
+    a[href*="github.com"] {display: none !important;}
+    iframe {visibility: visible !important;}
+    </style>
+    """, unsafe_allow_html=True)
+
+# ----------------------------------------------------
+
+import streamlit as st
 import pandas as pd
 import os
 import folium
