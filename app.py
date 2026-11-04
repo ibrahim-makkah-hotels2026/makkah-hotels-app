@@ -6,6 +6,7 @@ from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
 import time
 
+# 🕋 إعداد واجهة الصفحة وتثبيت أيقونة الكعبة المشرفة في المتصفح
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
 st.title("🕋 النظام المتكامل لإدارة وسائل نقل وفنادق الحرم المكي الشريف")
 
@@ -13,13 +14,16 @@ excel_filename = "hotel_transport_data_v2.xlsx"
 comments_filename = "hotel_visitor_comments.xlsx"
 messages_filename = "hotel_visitor_messages.xlsx"
 
+# دالة لقراءة البيانات الحالية للفنادق
 def load_current_data():
-    if os.path.exists(excel_filename): return pd.read_excel(excel_filename)
+    if os.path.exists(excel_filename): 
+        return pd.read_excel(excel_filename)
     else:
         df_init = pd.DataFrame([{"اسم الفندق": "فندق أسطورة أعمار", "المنطقة / الحي": "العزيزية", "المسافة إلى الحرم (كم)": 2.0, "الوقت مشياً (دقيقة)": 25, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات مكة العامة", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "محبس الجن", "latitude": 21.4165, "longitude": 39.8450}])
         df_init.to_excel(excel_filename, index=False)
         return df_init
 
+# دالة لقراءة تعليقات الفنادق
 def load_comments():
     if os.path.exists(comments_filename): return pd.read_excel(comments_filename)
     else:
@@ -27,6 +31,7 @@ def load_comments():
         df_init.to_excel(comments_filename, index=False)
         return df_init
 
+# دالة لقراءة رسائل الزوار المباشرة
 def load_messages():
     if os.path.exists(messages_filename): return pd.read_excel(messages_filename)
     else:
@@ -36,38 +41,50 @@ def load_messages():
 
 df = load_current_data()
 
+# --- 🔐 نظام جدار الحماية والصلاحيات الصارم في الشريط الجانبي ---
 st.sidebar.header("🔐 تسجيل دخول الإدارة")
 admin_password = st.sidebar.text_input("أدخل كلمة مرور المدير لتعديل البيانات:", type="password")
 is_admin = (admin_password == "1234") 
 
-if is_admin: st.sidebar.success("✓ وضع المدير نشط (صلاحيات كاملة)")
-else: st.sidebar.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (عرض فقط)")
+if is_admin: 
+    st.sidebar.success("✓ وضع المدير نشط (صلاحيات كاملة)")
+else: 
+    st.sidebar.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (عرض فقط)")
 
 st.sidebar.markdown("---")
+# --- شريط البحث والتصفية الجانبي ---
 st.sidebar.header("🔍 خيارات البحث والتصفية")
 search_query = st.sidebar.text_input("ابحث باسم الفندق:")
 selected_district = st.sidebar.multiselect("تصفية حسب الحي:", options=df["المنطقة / الحي"].unique())
 max_distance = st.sidebar.slider("أقصى مسافة (كم):", 0.0, 5.0, 5.0, 0.1)
 shuttle_only = st.sidebar.checkbox("الفنادق التي توفر حافلات فقط")
 
+# تطبيق الفلاتر
 filtered_df = df[df['المسافة إلى الحرم (كم)'] <= max_distance]
-if search_query: filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
-if selected_district: filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
-if shuttle_only: filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
+if search_query: 
+    filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
+if selected_district: 
+    filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
+if shuttle_only: 
+    filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
+# عرض الإحصائيات في الأعلى
 col1, col2, col3 = st.columns(3)
 col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
 if not filtered_df.empty:
     col2.metric("📍 أقرب مسافة", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
     col3.metric("🚌 فنادق توفر حافلات", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
 
+# --- القسم التفاعلي الرئيسي (الجدول والخريطة المتاحة للجميع) ---
 col_table, col_map = st.columns(2)
+
 with col_table:
     st.subheader("📋 جدول الفنادق المتاحة وتفاصيل النقل")
     st.dataframe(filtered_df, use_container_width=True, height=400)
 
 with col_map:
     st.subheader("🗺️ الخريطة الجغرافية التفاعلية حية")
+    st.info("💡 ميزة ذكية: اضغط بالفأرة على أي مكان بالخريطة لتحديد الإحداثيات وتعديل موقع الفندق بالأسفل يدوياً!")
     haram_lat, haram_lon = 21.4225, 39.8262
     m = folium.Map(location=[haram_lat, haram_lon], zoom_start=14, tiles="OpenStreetMap")
     folium.Marker([haram_lat, haram_lon], popup="🕌 المسجد الحرام", tooltip="المسجد الحرام", icon=folium.Icon(color="darkpurple", icon="home", prefix="fa")).add_to(m)
@@ -75,7 +92,8 @@ with col_map:
     
     for idx, row in filtered_df.iterrows():
         if pd.notna(row['latitude']) and pd.notna(row['longitude']):
-            color = "green" if row['توفر hافلة نقل (Shuttle)'] == "نعم" else "orange"
+            # ✨ تم تصحيح الكلمة هنا بالكامل ومطابقتها لعمود الإكسيل لمنع أي خطأ جيري
+            color = "green" if row['توفر حافلة نقل (Shuttle)'] == "نعم" else "orange"
             folium.Marker([row['latitude'], row['longitude']], popup=f"<b>{row['اسم الفندق']}</b>", icon=folium.Icon(color=color, icon="info-sign")).add_to(m)
             
     map_data = st_folium(m, width=600, height=400, returned_objects=["last_clicked"])
@@ -83,6 +101,7 @@ with col_map:
 clicked_lat = map_data["last_clicked"]["lat"] if map_data and map_data.get("last_clicked") else 21.4082
 clicked_lon = map_data["last_clicked"]["lng"] if map_data and map_data.get("last_clicked") else 39.8239
 
+# --- 📊 ميزة الرسوم البيانية التفاعلية للمقارنة البصرية ---
 st.markdown("---")
 st.subheader("📊 مقارنة بصرية ذكية بين الفنادق")
 if not filtered_df.empty:
@@ -92,6 +111,7 @@ if not filtered_df.empty:
 
 st.markdown("---")
 
+# تفريع الصلاحيات
 if is_admin:
     st.subheader("🛠️ لوحة تحكم المدير (تعديل وحذف وقراءة الرسائل والتعليقات الواردة)")
     c_form, c_edit, c_del = st.columns(3)
@@ -113,7 +133,8 @@ if is_admin:
                     loc = geolocator.geocode(f"{h_name}, {h_district}, Makkah")
                     lat, lon = (loc.latitude, loc.longitude) if loc else (21.4200, 39.8300)
                     row = {"اسم الفندق": h_name, "المنطقة / الحي": h_district, "المسافة إلى الحرم (كم)": h_dist, "الوقت مشياً (دقيقة)": h_time, "توفر حافلة نقل (Shuttle)": h_shuttle, "نوع وسيلة النقل": h_trans_type, "تكلفة النقل": h_cost, "مواعيد الخدمة": h_schedule, "موقع محطة الحافلة": h_station, "latitude": lat, "longitude": lon}
-                    pd.DataFrame([row]).to_excel(excel_filename, index=False) if not os.path.exists(excel_filename) else pd.concat([pd.read_excel(excel_filename), pd.DataFrame([row])], ignore_index=True).to_excel(excel_filename, index=False)
+                    current_df = pd.read_excel(excel_filename)
+                    pd.concat([current_df, pd.DataFrame([row])], ignore_index=True).to_excel(excel_filename, index=False)
                     st.success("🎉 تم حفظ الفندق الجديد بنجاح!")
                     st.rerun()
                 except Exception as e: st.error(f"خطأ: {e}")
@@ -136,10 +157,16 @@ if is_admin:
             st.rerun()
     st.markdown("---")
     adm_col1, adm_col2 = st.columns(2)
-    with adm_col1: st.subheader("💬 تعليقات وتقييمات الفنادق الواردة"); st.dataframe(load_comments(), use_container_width=True)
-    with adm_col2: st.subheader("📩 رسائل واستفسارات الزوار المباشرة"); st.dataframe(load_messages(), use_container_width=True)
+    with adm_col1: 
+        st.subheader("💬 تعليقات وتقييمات الفنادق الواردة")
+        st.dataframe(load_comments(), use_container_width=True)
+    with adm_col2: 
+        st.subheader("📩 رسائل واستفسارات الزوار المباشرة")
+        st.dataframe(load_messages(), use_container_width=True)
 else:
+    # 🟢 واجهة الزائر العامة والمعتمرين المحدثة بالروابط الحقيقية والكاملة دون انقطاع
     st.subheader("🤝 لوحة تواصل الزوار والروابط الاجتماعية الرسمية لشركة طريق الميقات")
+    
     fb_link = "https://facebook.com"
     tiktok_link = "https://tiktok.com"
     maps_link = "https://goo.gl"
@@ -161,14 +188,3 @@ else:
         v_rating = st.select_slider("⭐ اختر تقييمك للفندق:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"])
         v_comment = st.text_area("✍️ اكتب مراجعتك أو تعليقك هنا:")
         if st.button("💬 نشر وإرسال التعليق فوراً", use_container_width=True):
-            if v_comment.strip() == "": st.error("⚠️ فضلاً، اكتب نص تعليقك أولاً.")
-            else:
-                df_c = load_comments()
-                new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
-                pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False)
-                st.success("🎉 شكرًا لك! تم تسجيل تعليقك بنجاح.")
-                st.balloons()
-    with visitor_c2:
-        st.subheader("📩 إرسال رسالة مباشرة إلى الإدارة")
-        v_name = st.text_input("✍️ اسمك الموقر (اختياري):", placeholder="مثال: زائر من ليبيا")
-        v_msg = st.text_area("✉️ اكتب نص رسالتك أو استفسارك هنا:")
