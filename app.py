@@ -15,6 +15,23 @@ st.title("🕋 النظام المتكامل لإدارة وسائل نقل وف
 excel_filename = "hotel_transport_data_v2.xlsx"
 comments_filename = "hotel_visitor_comments.xlsx"
 messages_filename = "hotel_visitor_messages.xlsx"
+# --- 🔐 جدار حماية الصلاحيات المطور ونظام تسجيل الخروج التلقائي (اضفه هنا) ---
+st.header("🔐 صلاحيات النظام")
+if "logged_in" not in st.session_state: 
+    st.session_state["logged_in"] = False
+
+if st.session_state["logged_in"]:
+    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل والحذف)")
+    if st.button("🔒 تسجيل الخروج والعودة الفورية لوضع الزائر"):
+        st.session_state["logged_in"] = False
+        st.rerun()
+else:
+    admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والحذف:", type="password")
+    if admin_password == "1234":
+        st.session_state["logged_in"] = True
+        st.rerun()
+    st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (عرض فقط بدون تعديل أو حذف)")
+st.markdown("---")
 
 def load_current_data():
     if os.path.exists(excel_filename): return pd.read_excel(excel_filename)
