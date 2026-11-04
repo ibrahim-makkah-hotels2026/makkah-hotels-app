@@ -12,6 +12,7 @@ st.title("🕋 النظام المتكامل لإدارة وسائل نقل وف
 
 excel_filename = "hotel_transport_data_v2.xlsx"
 comments_filename = "hotel_visitor_comments.xlsx"
+messages_filename = "hotel_visitor_messages.xlsx"
 
 # دالة لقراءة البيانات الحالية للفنادق
 def load_current_data():
@@ -25,20 +26,28 @@ def load_current_data():
         df_init.to_excel(excel_filename, index=False)
         return df_init
 
-# دالة لقراءة طلبات وتعليقات الزوار
+# دالة لقراءة تعليقات الفنادق
 def load_comments():
     if os.path.exists(comments_filename):
         return pd.read_excel(comments_filename)
     else:
-        df_init = pd.DataFrame(columns=["الوقت", "اسم الفندق المستهدف", "نوع الطلب", "التعليق / تفاصيل التعديل"])
+        df_init = pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
         df_init.to_excel(comments_filename, index=False)
+        return df_init
+
+# دالة لقراءة رسائل الزوار المباشرة
+def load_messages():
+    if os.path.exists(messages_filename):
+        return pd.read_excel(messages_filename)
+    else:
+        df_init = pd.DataFrame(columns=["الوقت", "الاسم / المرسل", "نص الرسالة"])
+        df_init.to_excel(messages_filename, index=False)
         return df_init
 
 df = load_current_data()
 
 # --- 🔐 نظام جدار الحماية والصلاحيات الصارم في الشريط الجانبي ---
 st.sidebar.header("🔐 تسجيل دخول الإدارة")
-# 🔒 يمكنك تغيير كلمة المرور السرية للمدير من السطر أدناه بدلاً من 1234 المفترضة
 admin_password = st.sidebar.text_input("أدخل كلمة مرور المدير لتعديل البيانات:", type="password")
 is_admin = (admin_password == "1234") 
 
@@ -48,7 +57,7 @@ else:
     st.sidebar.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (عرض فقط)")
 
 st.sidebar.markdown("---")
-# --- شريط البحث والتصفية الجانبي (متاح للجميع) ---
+# --- شريط البحث والتصفية الجانبي ---
 st.sidebar.header("🔍 خيارات البحث والتصفية")
 search_query = st.sidebar.text_input("ابحث باسم الفندق:")
 selected_district = st.sidebar.multiselect("تصفية حسب الحي/المنطقة:", options=df["المنطقة / الحي"].unique())
@@ -80,6 +89,7 @@ with col_table:
 
 with col_map:
     st.subheader("🗺️ الخريطة الجغرافية التفاعلية حية")
+    st.info("💡 ميزة ذكية: اضغط بالفأرة على أي مكان بالخريطة لتحديد الإحداثيات وتعديل موقع الفندق بالأسفل يدوياً!")
     haram_lat, haram_lon = 21.4225, 39.8262
     m = folium.Map(location=[haram_lat, haram_lon], zoom_start=14, tiles="OpenStreetMap")
     folium.Marker([haram_lat, haram_lon], popup="🕌 المسجد الحرام", tooltip="المسجد الحرام", icon=folium.Icon(color="darkpurple", icon="home", prefix="fa")).add_to(m)
@@ -112,8 +122,8 @@ st.markdown("---")
 
 # --- 🔒 التحقق الصارم من الصلاحيات لفصل المدير عن الزائر من المتصفح ---
 if is_admin:
-    # 🔴 واجهة المدير السرية (تظهر فقط عند كتابة الرقم السري الصحيح)
-    st.subheader("🛠️ لوحة تحكم المدير (صلاحيات كاملة للتعديل والحذف والطلبات)")
+    # 🔴 واجهة المدير السرية (تظهر فقط عند كتابة الرقم السري الصحيح 1234)
+    st.subheader("🛠️ لوحة تحكم المدير (صلاحيات كاملة للتعديل والحذف والطلبات الواردة)")
     col_form, col_edit, col_delete = st.columns(3)
     
     with col_form:
@@ -129,15 +139,13 @@ if is_admin:
         h_station = st.text_input("🏣 موقع محطة الحافلة:")
 
         if st.button("💾 حفظ وتحديد الموقع تلقائياً", use_container_width=True):
-            if h_name.strip() == "" or h_district.strip() == "": 
-                st.error("⚠️ فضلاً، اكتب الاسم والحي.")
+            if h_name.strip() == "" or h_district.strip() == "": st.error("⚠️ فضلاً، اكتب الاسم والحي.")
             else:
                 with st.spinner("🔍 جاري الحفظ..."):
                     try:
                         geolocator = Nominatim(user_agent="makkah_hotel_locator")
                         location = geolocator.geocode(f"{h_name}, {h_district}, Makkah, Saudi Arabia")
-                        if location is None: 
-                            location = geolocator.geocode(f"{h_district}, Makkah, Saudi Arabia")
+                        if location is None: location = geolocator.geocode(f"{h_district}, Makkah, Saudi Arabia")
                         resolved_lat, resolved_lon = (location.latitude, location.longitude) if location else (21.4200, 39.8300)
                         
                         row_to_add = {
@@ -151,8 +159,7 @@ if is_admin:
                         updated_df.to_excel(excel_filename, index=False)
                         st.success(f"🎉 تم حفظ فندق '{h_name}' بنجاح!")
                         st.rerun()
-                    except Exception as e: 
-                        st.error(f"خطأ: {e}")
+                    except Exception as e: st.error(f"خطأ: {e}")
 
     with col_edit:
         st.subheader("🎯 تعديل موقع فندق يدوياً")
@@ -177,15 +184,9 @@ if is_admin:
             time.sleep(1)
             st.rerun()
             
+    # 📥 عرض صناديق الإدارة لبيانات الزوار الواردة للمدير فقط
     st.markdown("---")
-    st.subheader("📥 صندوق طلبات وتعديلات وتعليقات الزوار الواردة")
-    df_comments = load_comments()
-    if not df_comments.empty: 
-        st.dataframe(df_comments, use_container_width=True)
-    else: 
-        st.info("لا توجد تعليقات أو طلبات تعديل واردة من الزوار حتى الآن.")
-
-else:
-    # 🟢 واجهة الزائر العامة والآمنة (تظهر تلقائياً لجميع المعتمرين والأصدقاء وتمنع عنهم التعديل)
-    st.subheader("📨 صندوق تواصل الزوار (إرسال طلب، تعليق، أو اقتراح تعديل بيانات)")
+    adm_col1, adm_col2 = st.columns(2)
+    with adm_col1:
+        st.subheader("💬 تعليقات وتقييمات الفنادق الواردة")
 
