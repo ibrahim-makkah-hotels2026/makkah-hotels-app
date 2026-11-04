@@ -32,7 +32,7 @@ df = load_current_data()
 # --- 🔍 شريط البحث الجانبي وخانة دخول الأدمن كما كانت في البداية تماماً ---
 st.sidebar.header("🔍 خيارات البحث والتصفية")
 search_query = st.sidebar.text_input("ابحث باسم الفندق:")
-selected_district = st.sidebar.multiselect("تصفية حسب الحي/المنطقة:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else)
+selected_district = st.sidebar.multiselect("تصفية حسب الحي/المنطقة:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else [])
 max_distance = st.sidebar.slider("أقصى مسافة عن الحرم (كم):", 0.0, 5.0, 5.0, 0.1)
 shuttle_only = st.sidebar.checkbox("عرض الفنادق التي توفر حافلات نقل فقط")
 
@@ -85,6 +85,8 @@ st.subheader("📊 مقارنة بصرية ذكية بين الفنادق")
 if not filtered_df.empty and 'اسم الفندق' in filtered_df.columns:
     ch1, ch2 = st.columns(2)
     with ch1: st.bar_chart(filtered_df.set_index("اسم الفندق")["المسافة إلى الحرم (كم)"])
+    with ch2: st.area_chart(filtered_df.set_index("اسم الفندق")["الوقت مشياً (دقيقة)"])
+
     with ch2: st.area_chart(filtered_df.set_index("اسم الفندق")["الوقت مشياً (دقيقة)"])
 st.markdown("---")
 
