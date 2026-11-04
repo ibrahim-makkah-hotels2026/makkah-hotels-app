@@ -6,15 +6,26 @@ from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
 import time
 
-# 🕋 إعداد واجهة الصفحة وتثبيت أيقونة الكعبة المشرفة في المتصفح
+# 🕋 إعداد واجهة الصفحة وتثبيت أيقونة الكعبة المشرفة
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
+
+# 🔒 حاقن الأمان السري (CSS Injection): يخفي علامة القط وشريط جيت هاب تماماً عن الزوار لحظر فضولهم
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .viewerBadge_container__16S6S {display: none !important;}
+    stDeployButton {display: none !important;}
+    </style>
+    """, unsafe_allow_html=True)
+
 st.title("🕋 النظام المتكامل لإدارة وسائل نقل وفنادق الحرم المكي الشريف")
 
 excel_filename = "hotel_transport_data_v2.xlsx"
 comments_filename = "hotel_visitor_comments.xlsx"
 messages_filename = "hotel_visitor_messages.xlsx"
 
-# دالة لقراءة البيانات الحالية للفنادق
 def load_current_data():
     if os.path.exists(excel_filename): return pd.read_excel(excel_filename)
     else:
@@ -22,25 +33,15 @@ def load_current_data():
         df_init.to_excel(excel_filename, index=False)
         return df_init
 
-# دالة لقراءة تعليقات وتقييمات الفنادق
 def load_comments():
-    if os.path.exists(comments_filename): return pd.read_excel(comments_filename)
-    else:
-        df_init = pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
-        df_init.to_excel(comments_filename, index=False)
-        return df_init
+    return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
 
-# دالة لقراءة رسائل واستفسارات الزوار
 def load_messages():
-    if os.path.exists(messages_filename): return pd.read_excel(messages_filename)
-    else:
-        df_init = pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
-        df_init.to_excel(messages_filename, index=False)
-        return df_init
+    return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
 
 df = load_current_data()
 
-# --- 🔐 جدار حماية الصلاحيات الصارم في الشريط الجانبي (الرقم السري 1234) ---
+# --- 🔐 جدار حماية الصلاحيات الصارم (الرقم السري 1234) ---
 st.sidebar.header("🔐 تسجيل دخول الإدارة")
 admin_password = st.sidebar.text_input("أدخل كلمة مرور المدير لتعديل البيانات:", type="password")
 is_admin = (admin_password == "1234") 
@@ -56,23 +57,16 @@ max_distance = st.sidebar.slider("أقصى مسافة (كم):", 0.0, 5.0, 5.0, 0
 shuttle_only = st.sidebar.checkbox("الفنادق التي توفر حافلات فقط")
 
 filtered_df = df.copy()
-if 'المسافة إلى الحرم (كم)' in filtered_df.columns:
-    filtered_df = filtered_df[filtered_df['المسافة إلى الحرم (كم)'] <= max_distance]
-if search_query and 'اسم الفندق' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
-if selected_district and 'المنطقة / الحي' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
-if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
+if 'المسافة إلى الحرم (كم)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المسافة إلى الحرم (كم)'] <= max_distance]
+if search_query and 'اسم الفندق' in filtered_df.columns: filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
+if selected_district and 'المنطقة / الحي' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
+if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
 col1, col2, col3 = st.columns(3)
-col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
-if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns:
-    col2.metric("📍 أقرب مسافة", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns:
-    col3.metric("🚌 فنادق توفر حافلات", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
+col1.metric("📊 إجمالي الفنادق", len(filtered_df))
+if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: col2.metric("📍 أقرب مسافة", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
+if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: col3.metric("🚌 فنادق توفر حافلات", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
 
-# --- القسم الرئيسي المفتوح للجميع (الجدول والخريطة) ---
 col_table, col_map = st.columns(2)
 with col_table:
     st.subheader("📋 جدول الفنادق المتاحة وتفاصيل النقل")
@@ -80,7 +74,6 @@ with col_table:
 
 with col_map:
     st.subheader("🗺️ الخريطة الجغرافية التفاعلية حية")
-    st.info("💡 ميزة ذكية: اضغط بالفأرة على أي مكان بالخريطة لتحديد الإحداثيات وتعديل موقع الفندق بالأسفل يدوياً!")
     haram_lat, haram_lon = 21.4225, 39.8262
     m = folium.Map(location=[haram_lat, haram_lon], zoom_start=14, tiles="OpenStreetMap")
     folium.Marker([haram_lat, haram_lon], popup="🕌 المسجد الحرام", tooltip="المسجد الحرام", icon=folium.Icon(color="darkpurple", icon="home", prefix="fa")).add_to(m)
@@ -88,9 +81,7 @@ with col_map:
     
     for idx, row in filtered_df.iterrows():
         if pd.notna(row.get('latitude')) and pd.notna(row.get('longitude')):
-            # ✨ تم تصحيح الكلمة وتأمين استدعاء العمود تماماً لمنع خطأ الـ KeyError للأبد
-            has_shuttle = str(row.get('توفر حافلة نقل (Shuttle)', 'لا'))
-            color = "green" if "نعم" in has_shuttle else "orange"
+            color = "green" if "نعم" in str(row.get('توفر حافلة نقل (Shuttle)', 'لا')) else "orange"
             folium.Marker([row['latitude'], row['longitude']], popup=f"<b>{row.get('اسم الفندق', 'فندق')}</b>", icon=folium.Icon(color=color, icon="info-sign")).add_to(m)
             
     map_data = st_folium(m, width=600, height=400, returned_objects=["last_clicked"])
@@ -103,18 +94,13 @@ st.subheader("📊 مقارنة بصرية ذكية بين الفنادق")
 if not filtered_df.empty and 'اسم الفندق' in filtered_df.columns:
     ch1, ch2 = st.columns(2)
     with ch1:
-        if 'المسافة إلى الحرم (كم)' in filtered_df.columns:
-            st.write("🧱 **المسافة الدقيقة إلى الحرم (بالكيلومتر):**")
-            st.bar_chart(filtered_df.set_index("اسم الفندق")["المسافة إلى الحرم (كم)"])
+        if 'المسافة إلى الحرم (كم)' in filtered_df.columns: st.bar_chart(filtered_df.set_index("اسم الفندق")["المسافة إلى الحرم (كم)"])
     with ch2:
-        if 'الوقت مشياً (دقيقة)' in filtered_df.columns:
-            st.write("⏱️ **الوقت التقريبي المستغرق مشياً (بالدقائق):**")
-            st.area_chart(filtered_df.set_index("اسم الفندق")["الوقت مشياً (دقيقة)"])
+        if 'الوقت مشياً (دقيقة)' in filtered_df.columns: st.area_chart(filtered_df.set_index("اسم الفندق")["الوقت مشياً (دقيقة)"])
 
 st.markdown("---")
 
 if is_admin:
-    # 🔴 واجهة الإدارة المغلقة للمدير فقط
     st.subheader("🛠️ لوحة تحكم المدير (تعديل وحذف وقراءة الرسائل والتعليقات الواردة)")
     c_form, c_edit, c_del = st.columns(3)
     with c_form:
@@ -162,8 +148,8 @@ if is_admin:
     with adm_col1: st.subheader("💬 تعليقات وتقييمات الفنادق الواردة"); st.dataframe(load_comments(), use_container_width=True)
     with adm_col2: st.subheader("📩 رسائل واستفسارات الزوار المباشرة"); st.dataframe(load_messages(), use_container_width=True)
 else:
-    # 🟢 واجهة الزائر العامة والمعتمرين المحدثة بالروابط المخصصة والأزرار المطلوبة كاملاً دون انقطاع
-    st.subheader("🤝 لوحة تواصل الزوار والروابط الاجتماعية الرسمية لشركة طريق الميقات")
+    # 🟢 واجهة الزائر العامة والمعتمرين المحدثة بروابط شركة طريق الميقات الرسمية 
+    st.subheader("🤝 لوحة تواصل الزوار والروابط الاجتماعية الرسمية لشركة طريق الميقات فرع 11 يونيو")
     
     fb_link = "https://facebook.com"
     tiktok_link = "https://tiktok.com"
@@ -172,3 +158,14 @@ else:
     link_c1, link_c2, link_c3, link_c4 = st.columns(4)
     with link_c1: st.link_button("🌐 تابعنا على صفحة فيسبوك", fb_link, use_container_width=True)
     with link_c2: st.link_button("🎵 تابعنا على حساب تيك توك", tiktok_link, use_container_width=True)
+    with link_c3: st.link_button("📍 زيارة موقعنا", maps_link, use_container_width=True)
+    with link_c4: 
+        if st.button("👍 الإعجاب", use_container_width=True):
+            st.toast("❤️ شكرًا لك على إعجابك وتثمينك لخدمات شركة طريق الميقات فرع 11 يونيو!")
+            st.balloons()
+            
+    st.markdown("---")
+    visitor_c1, visitor_c2 = st.columns(2)
+    with visitor_c1:
+        st.subheader("💬 إضافة تعليق ومراجعة لفندق")
+        v_hotel = st.selectbox("🎯 اختر الفندق المراد تقييمه:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
