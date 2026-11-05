@@ -23,10 +23,10 @@ st.markdown("""
 
 ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
 
-excel_filename = "makkah_madinah_full_hotels_v15.xlsx"
-comments_filename = "visitor_comments_database_v15.xlsx"
-messages_filename = "visitor_messages_database_v15.xlsx"
-bookings_filename = "visitor_bookings_database_v15.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v16.xlsx"
+comments_filename = "visitor_comments_database_v16.xlsx"
+messages_filename = "visitor_messages_database_v16.xlsx"
+bookings_filename = "visitor_bookings_database_v16.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
@@ -303,11 +303,12 @@ tr_c4.error("📞 **دعم وتواصل**\nخدمة الزوار المباشر�
 
 st.markdown("---")
 
-# --- 🧮 حاسبة الوقت ومحول العملات ---
+# --- 🧮 التبديل المطلوب: حاسبة الوقت يساراً، ومحول العملات يميناً، وزر خرائط جوجل في مكانه الأول ---
 st.subheader("🧮 حاسبة الوقت والمسافة ومحول العملات اللحظي")
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
 with calc_c1:
+    # تم وضع حاسبة الوقت والمسافة في الجهة اليسرى (أو حسب الترتيب المطلوب)
     calc_dist = st.number_input("أدخل المسافة عن الحرم (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
     calc_mode = st.selectbox("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
     if calc_mode == "🚶 مشياً على الأقدام":
@@ -316,20 +317,22 @@ with calc_c1:
         st.success(f"⏱️ الوقت المتوقع بالحافلة: **{int(calc_dist * 4) + 5} دقيقة**")
 
 with calc_c2:
+    # زر فتح وتحديد الموقع في خرائط جوجل في مكانه الأول (الوسط)
+    st.write("🗺️ **الملاحة الجغرافية السريعة:**")
+    st.write("")
+    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%DAC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
+    st.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
+
+with calc_c3:
+    # محول سعر الصرف في الجهة اليمنى بجانب الحاسبة
     st.write("💱 **محول سعر الصرف (د.ل / USD):**")
     usd_input = st.number_input("أدخل المبلغ بالدولار ($):", min_value=1, max_value=10000, value=100)
     converted_lyd = round(usd_input * usd_to_lyd_rate, 2)
     st.info(f"💵 القيمة المعادلة بالسوق الموازي: **{converted_lyd} دينار ليبي**")
 
-with calc_c3:
-    st.write("")
-    st.write("")
-    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%DAC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
-    st.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
-
 st.markdown("---")
 
-# --- 🕌 دليل مزارات المدينة المنورة (محدث حسب طلبك) ---
+# --- 🕌 دليل مزارات المدينة المنورة ---
 st.subheader("🕌 دليل مزارات المدينة المنورة")
 mazar_c1, mazar_c2, mazar_c3, mazar_c4 = st.columns(4)
 with mazar_c1:
