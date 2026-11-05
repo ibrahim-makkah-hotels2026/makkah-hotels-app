@@ -18,13 +18,12 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ملفات حفظ صور الإعلانات مؤقتاً لتظهر للزوار تلقائياً
 ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
 
-excel_filename = "makkah_madinah_full_hotels_v11.xlsx"
-comments_filename = "visitor_comments_database_v11.xlsx"
-messages_filename = "visitor_messages_database_v11.xlsx"
-bookings_filename = "visitor_bookings_database_v11.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v12.xlsx"
+comments_filename = "visitor_comments_database_v12.xlsx"
+messages_filename = "visitor_messages_database_v12.xlsx"
+bookings_filename = "visitor_bookings_database_v12.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
@@ -147,7 +146,7 @@ def get_all_makkah_hotels():
         "فندق صن رايز المدينة المنورة", "فندق هوليداي فيلا المدينة", "أجنحة طيبة أراك", "رويال ان النخبة", "فندق نزل رويال إن",
         "فندق جولدن توليب المكتان", "فندق غراند الاندلس", "فندق سرايا طابة", "فندق حياة انترناشونال المدينة", "فندق نزل الشاكرين",
         "فندق زوار انترناشيونال", "فندق سفراء الهدى", "فندق دار النعيم", "فندق الإيمان القبلة", "فندق مودة الصفوة", "فندق مودة الواحة",
-        "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "fندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العليان",
+        "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "فندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العليان",
         "الفيروز الماسي (فندق جلوريا المدينة)", "فندق ماريوت المدينة", "فندق وكن الحرم النبوي", "فندق العقيق آراك",
         "فندق ديار انترناشونال", "فندق المني كريم راديسون بلو المدينة", "فندق رويال ديار", "فندق المدينة أراماس", "فندق روضة مبارك", "فندق الإشراق",
         "فندق الوسام", "فندق زهرة مبارك", "فندق أريس الجوار", "فندق رمادا", "فندق ديار المدينة", "فندق روضة الأمل", "فندق زمرد قرطاج",
@@ -228,7 +227,6 @@ if "logged_in" not in st.session_state:
 if st.session_state["logged_in"]:
     st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، رفع صور الإعلانات، وقراءة الحجوزات والرسائل)")
     
-    # 🖼️ أدوات رفع صور الإعلانات (تظهر للأدمن فقط هنا)
     st.markdown("### 🛠️ لوحة تحكم الأدمن: رفع وتحديث صور الإعلانات الأربعة")
     ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
     
@@ -262,7 +260,7 @@ else:
         st.session_state["logged_in"] = True
         st.rerun()
 
-# عرض مساحات الإعلانات للجميع (إذا رفعت صور تظهر، وإن لم ترفع تظهر مربعات نظيفة وفارغة بدون أزرار رفع للزوار)
+# عرض مساحات الإعلانات للجميع
 st.write("### 🏷️ مساحات العروض الإعلانية:")
 p_col1, p_col2, p_col3, p_col4 = st.columns(4)
 with p_col1:
@@ -279,11 +277,10 @@ with p_col4:
     else: st.info("مربع إعلان 4 فارغ")
 
 st.markdown("---")
-# تعديل نص حالة التصفح (بدون ذكر اسم الشركة)[span_0](start_span)[span_0](end_span)
 st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (تصفح وفلترة وحجز آلي)")
 st.markdown("---")
 
-# --- 🧮 حاسبة الوقت والمسافة وزر خرائط جوجل (مثبتة في الواجهة الرئيسية) ---
+# --- 🧮 حاسبة الوقت والمسافة وزر خرائط جوجل ---
 st.subheader("🧮 حاسبة الوقت والمسافة للحرم والملاحة المباشرة")
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
@@ -323,17 +320,28 @@ if selected_district and 'المنطقة / الحي' in filtered_df.columns:
 if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
+# 🕶️ إخفاء عمود المعادل بالسوق الموازي عن الزوار وعرضه للأدمن فقط
+display_df = filtered_df.copy()
+if not st.session_state["logged_in"]:
+    if "المعادل بالسوق الموازي (د.ل)" in display_df.columns:
+        display_df = display_df.drop(columns=["المعادل بالسوق الموازي (د.ل)"])
+
 col1, col2, col3 = st.columns(3)
 col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
 if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
     col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-col3.metric("💵 سعر الصرف الموازي (9.92)", f"{usd_to_lyd_rate} د.ل")
 
-# 📋 عرض جدول الفنادق الكامل المطور مع الأسعار
+# إظهار مؤشر سعر الصرف للأدمن فقط في الأعلى
+if st.session_state["logged_in"]:
+    col3.metric("💵 سعر الصرف الموازي (9.92)", f"{usd_to_lyd_rate} د.ل")
+else:
+    col3.metric("🌙 حالة الحجز", "متاح فوري")
+
+# 📋 عرض جدول الفنادق
 st.subheader("📋 جدول الفنادق المتاحة وأسعار الحجز النهائي (طريق الميقات)")
 
 st.data_editor(
-    filtered_df,
+    display_df,
     use_container_width=True,
     height=450,
     column_config={
