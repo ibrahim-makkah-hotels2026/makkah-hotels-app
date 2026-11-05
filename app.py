@@ -10,41 +10,46 @@ st.set_page_config(page_title="نظام إدارة ونقل الفنادق ال�
 # 🔒 جدار الأمان الذكي لإخفاء شريط جيت هاب وعلامة القط نهائياً عن الزوار
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-# 📢 1. شريط الإعلان بالنص المحدد باللون الأزرق فقط
+# 📢 شريط الإعلان بالنص المحدد
 st.markdown("""
 <div style="background-color: #1e3d59; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 15px;">
     🌙 عروض و رحلات العمرة متوفرة بأفضل الأسعار
 </div>
 """, unsafe_allow_html=True)
 
-# 🖼️ 2. عرض 4 مربعات صور إعلانية فقط (بدون أي أزرار أو نصوص تحتها أو فوقها)
-c_img1, c_img2, c_img3, c_img4 = st.columns(4)
+# 🖼️ 4 مربعات إعلانية فارغة تتيح للإدارة رفع وتغيير الصور مباشرة
+st.write("### 🏷️ مساحات العروض الإعلانية:")
+ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
 
-with c_img1:
-    st.image("https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=400", use_container_width=True)
-
-with c_img2:
-    st.image("https://images.unsplash.com/photo-1565552437193-470e9ea296ef?w=400", use_container_width=True)
-
-with c_img3:
-    st.image("https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400", use_container_width=True)
-
-with c_img4:
-    st.image("https://images.unsplash.com/photo-1541971875076-8f970d573be6?w=400", use_container_width=True)
+with ad_col1:
+    img1 = st.file_uploader("مربع الإعلان 1", type=["png", "jpg", "jpeg"], key="ad1")
+    if img1:
+        st.image(img1, use_container_width=True)
+with ad_col2:
+    img2 = st.file_uploader("مربع الإعلان 2", type=["png", "jpg", "jpeg"], key="ad2")
+    if img2:
+        st.image(img2, use_container_width=True)
+with ad_col3:
+    img3 = st.file_uploader("مربع الإعلان 3", type=["png", "jpg", "jpeg"], key="ad3")
+    if img3:
+        st.image(img3, use_container_width=True)
+with ad_col4:
+    img4 = st.file_uploader("مربع الإعلان 4", type=["png", "jpg", "jpeg"], key="ad4")
+    if img4:
+        st.image(img4, use_container_width=True)
 
 st.markdown("---")
 st.title("🕋 النظام الشامل لإدارة وسائل نقل وفنادق مكة المكرمة والمدينة المنورة")
 
-# تغيير اسم الملف لإجبار البرنامج على تحميل كافة الفنادق المكتملة
-excel_filename = "makkah_madinah_full_hotels_v9.xlsx"
-comments_filename = "visitor_comments_database_v9.xlsx"
-messages_filename = "visitor_messages_database_v9.xlsx"
-bookings_filename = "visitor_bookings_database_v9.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v10.xlsx"
+comments_filename = "visitor_comments_database_v10.xlsx"
+messages_filename = "visitor_messages_database_v10.xlsx"
+bookings_filename = "visitor_bookings_database_v10.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
 
-# 📊 قاعدة البيانات الشاملة لجميع الفنادق بالكامل
+# 📊 قاعدة البيانات الشاملة لجميع الفنادق
 def get_all_makkah_hotels():
     primary_hotels = [
         ("أبراج مكة", "ساحة الحرم (أجياد)", 0.1, 150),
@@ -162,7 +167,7 @@ def get_all_makkah_hotels():
         "فندق صن رايز المدينة المنورة", "فندق هوليداي فيلا المدينة", "أجنحة طيبة أراك", "رويال ان النخبة", "فندق نزل رويال إن",
         "فندق جولدن توليب المكتان", "فندق غراند الاندلس", "فندق سرايا طابة", "فندق حياة انترناشونال المدينة", "فندق نزل الشاكرين",
         "فندق زوار انترناشيونال", "فندق سفراء الهدى", "فندق دار النعيم", "فندق الإيمان القبلة", "فندق مودة الصفوة", "فندق مودة الواحة",
-        "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "فندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العلياء",
+        "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "فندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العليان",
         "الفيروز الماسي (فندق جلوريا المدينة)", "فندق ماريوت المدينة", "فندق وكن الحرم النبوي", "فندق العقيق آراك",
         "فندق ديار انترناشونال", "فندق المني كريم راديسون بلو المدينة", "فندق رويال ديار", "فندق المدينة أراماس", "فندق روضة مبارك", "فندق الإشراق",
         "فندق الوسام", "فندق زهرة مبارك", "فندق أريس الجوار", "فندق رمادا", "فندق ديار المدينة", "فندق روضة الأمل", "فندق زمرد قرطاج",
@@ -172,7 +177,6 @@ def get_all_makkah_hotels():
     ]
 
     data = []
-    # إدخال القائمة الأولى
     for name, area, d_val, base_price in primary_hotels:
         lyd_base = round(base_price * usd_to_lyd_rate, 2)
         final_price_lyd = round(lyd_base + profit_margin, 2)
@@ -190,7 +194,6 @@ def get_all_makkah_hotels():
             "موقع الفندق على خرائط جوجل": map_link
         })
 
-    # إدخال بقية الفنادق كاملة
     for idx, name in enumerate(additional_hotels):
         d_val = round(1.0 + ((idx % 35) * 0.1), 2)
         base_price = round(35 + (idx % 40), 2)
@@ -253,25 +256,32 @@ else:
         st.session_state["logged_in"] = True
         st.rerun()
 
-st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر لشركة طريق الميقات (تصفح وفلترة وحجز آلي)")
+# تعديل نص حالة التصفح (بدون ذكر اسم الشركة بناءً على طلبك)[span_1](start_span)[span_1](end_span)
+st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (تصفح وفلترة وحجز آلي)")
 st.markdown("---")
 
-# --- 🧮 حاسبة الوقت والمسافة وزر الانتقال لخرائط جوجل في الشريط الجانبي ---
-st.sidebar.header("🧮 حاسبة الوقت والمسافة للحرم")
-calc_dist = st.sidebar.number_input("أدخل المسافة (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
-calc_mode = st.sidebar.radio("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
+# --- 🧮 حاسبة الوقت والمسافة وزر خرائط جوجل (مثبتة وثابتة في الواجهة الرئيسية وليست في الشريط الجانبي) ---
+st.subheader("🧮 حاسبة الوقت والمسافة للحرم والملاحة المباشرة")
+calc_c1, calc_c2, calc_c3 = st.columns(3)
+
+with calc_c1:
+    calc_dist = st.number_input("أدخل المسافة (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
+with calc_c2:
+    calc_mode = st.selectbox("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
+with calc_c3:
+    st.write("")
+    st.write("")
+    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%DAC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
+    st.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
 
 if calc_mode == "🚶 مشياً على الأقدام":
     est_time = int(calc_dist * 12)
-    st.sidebar.success(f"⏱️ الوقت المتوقع مشياً: **{est_time} دقيقة**")
+    st.success(f"⏱️ الوقت المتوقع مشياً: **{est_time} دقيقة**")
 else:
     est_time = int(calc_dist * 4) + 5
-    st.sidebar.success(f"⏱️ الوقت المتوقع بالحافلة: **{est_time} دقيقة** (مع الانتظار)")
+    st.success(f"⏱️ الوقت المتوقع بالحافلة: **{est_time} دقيقة** (مع الانتظار)")
 
-maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%AA%D8%AD%D8%AF%D9%8A%D8%AF+%D8%A7%D9%84%D9%85%D9%88%D9%82%D8%B9+%D9%85%D9%83%D8%A9"
-st.sidebar.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
-
-st.sidebar.markdown("---")
+st.markdown("---")
 
 # --- 🔍 شريط البحث والتصفية الجانبي ---
 st.sidebar.header("🔍 خيارات البحث والفرز الشامل")
