@@ -118,7 +118,7 @@ if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.column
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
 # ----------------------------------------------------
-# 📊 عرض الجدول والتخريط الجغرافي (تم إنشاء col_table و col_map هنا)
+# 📊 عرض الجدول والتخريط الجغرافي
 # ----------------------------------------------------
 col_table, col_map = st.columns(2)
 
@@ -218,9 +218,10 @@ if st.session_state["logged_in"]:
 else:
     st.subheader("🤝 لوحة تواصل الزوار والروابط الاجتماعية الرسمية لشركة طريق الميقات فرع 11 يونيو")
     
-    fb_link = "https://facebook.com"
-    tiktok_link = "https://tiktok.com"
-    maps_link = "https://goo.gl"
+    # روابط الأزرار المحدثة
+    fb_link = "https://www.facebook.com/share/1DveNwUUvR/"
+    tiktok_link = "https://www.tiktok.com/@miqat_11june_branch?is_from_webapp=1&sender_device=pc"
+    maps_link = "https://maps.app.goo.gl/6VL4dgZ3EuWsj46XA?g_st=ac"
     
     link_c1, link_c2, link_c3, link_c4 = st.columns(4)
     with link_c1: st.link_button("🌐 تابعنا على صفحة فيسبوك", fb_link, use_container_width=True)
