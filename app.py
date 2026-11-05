@@ -91,7 +91,6 @@ if search_query and 'اسم الفندق' in filtered_df.columns: filtered_df = 
 if selected_district and 'المنطقة / الحي' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
 if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
-
 with col_table:
     st.subheader("📋 جدول الفنادق المتاحة وتفاصيل النقل")
     st.dataframe(filtered_df, use_container_width=True, height=400)
