@@ -42,7 +42,8 @@ def load_current_data():
 def load_comments(): return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
 def load_messages(): return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
 
-df = load_current_data()
+df = pd.DataFrame(get_all_makkah_hotels())
+
 
 # --- 🔐 جدار حماية الأدمن في أعلى الشاشة ---
 st.header("🔐 صلاحيات النظام ودخول الإدارة")
