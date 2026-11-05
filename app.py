@@ -5,30 +5,33 @@ import time
 import urllib.parse
 from PIL import Image
 
-# 🕋 إعداد واجهة الصفحة والأيقونة العلوية للكعبة المشرفة
+# 🕋 إعداد واجهة الصفحة
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
 
-# 🔒 جدار الأمان الذكي لإخفاء شريط جيت هاب وعلامة القط نهائياً عن الزوار
+# 🔒 جدار الأمان الذكي لإخفاء شريط جيت هاب
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-# 📢 شريط الإعلان بالنص المحدد
+# 📢 شريط الإعلان المطور مع شريط عاجل للرحلات (ميزة العد التنازلي والتنبيه)
 st.markdown("""
-<div style="background-color: #1e3d59; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 15px;">
+<div style="background-color: #1e3d59; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
     🌙 عروض و رحلات العمرة متوفرة بأفضل الأسعار
+</div>
+<div style="background-color: #d9534f; color: white; padding: 6px; border-radius: 5px; text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 15px;">
+    ⏳ تذكير عاجل: متبقي مقاعد محدودة جداً على رحلة العمرة القادمة! احجز مقعدك الآن قبل اكتمال العدد.
 </div>
 """, unsafe_allow_html=True)
 
 ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
 
-excel_filename = "makkah_madinah_full_hotels_v12.xlsx"
-comments_filename = "visitor_comments_database_v12.xlsx"
-messages_filename = "visitor_messages_database_v12.xlsx"
-bookings_filename = "visitor_bookings_database_v12.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v14.xlsx"
+comments_filename = "visitor_comments_database_v14.xlsx"
+messages_filename = "visitor_messages_database_v14.xlsx"
+bookings_filename = "visitor_bookings_database_v14.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
 
-# 📊 قاعدة البيانات الشاملة لجميع الفنادق
+# 📊 قاعدة البيانات الشاملة لجميع الفنادق (أكثر من 400 فندق)
 def get_all_makkah_hotels():
     primary_hotels = [
         ("أبراج مكة", "ساحة الحرم (أجياد)", 0.1, 150),
@@ -75,7 +78,7 @@ def get_all_makkah_hotels():
         "كيونا العزيزية", "فندق لمار اجياد الأول - برج أ", "فندق بارك إن من راديسون مكة النسيم", "فندق جوهرة العدل", "فندق سنود العظمة", 
         "فندق كيونا الهجرة", "فندق بكة الصلاح مكة المكرمة", "فندق ومركز مؤتمرات هيلتون مكة", "فندق الروح الحرة", "فندق مجد المهاجرين", 
         "فندق الروحانية", "فندق إعمار الخليل", "فندق ديار المشاعر الفندقية", "فندق الأرض المتميزة 1، مكة", "سنود العزيزية", 
-        "فندق مباني المستقبل", "فندق مآثر الجوار", "الأصيل رفادة", "فندق لمار اجياد الاول برج ب", "تلال جبل الكعبة", "فندق المزن المتألقة", 
+        "فندق مباني المستقبل", "فندق مآثر الجوار", "الأصيل رفادة", "فندق لمار اجياد الأول برج ب", "تلال جبل الكعبة", "فندق المزن المتألقة", 
         "فندق بلو كورال", "فندق إم الدانة مكة من ميلينيوم", "فندق الصفوة البرج 1", "فندق ميزاب الضيافة", "فندق بويتك الجود مكة", 
         "فندق البيرق", "فور بوينتس باي شيراتون مكة النسيم", "فندق أبراج الكسوة", "فندق إشراق أجياد", "Al Olyan Golden Hotel", 
         "نور منازل الكرام", "بتول أجياد", "فندق الروضة المكية", "فندق أجواد أجياد", "فندق أبراج الهداية", "فندق بياب العزيزية", 
@@ -196,6 +199,16 @@ def get_all_makkah_hotels():
         })
     return data
 
+# جدول تذاكر الطيران (قسم تذاكر الطيران فقط بدون نقل بري)
+def get_flights_data():
+    flights = [
+        ("طرابلس (TIP) -> جدة (JED)", "الخطوط الجوية الأفريقية", "مباشر", "2,850 د.ل"),
+        ("بنغازي (BEN) -> جدة (JED)", "الخطوط الجوية الليبية", "مباشر", "2,750 د.ل"),
+        ("طرابلس (TIP) -> المدينة المنورة (MED)", "خطوط الطيران التركية", "ترانزيت إسطنبول", "3,400 د.ل"),
+        ("مصراتة (MRA) -> جدة (JED)", "الخطوط الأفريقية", "مباشر", "2,800 د.ل")
+    ]
+    return pd.DataFrame(flights, columns=["خط السير", "شركة الطيران", "نوع الرحلة", "سعر التذكرة المبدئي"])
+
 def load_current_data():
     if os.path.exists(excel_filename):
         try:
@@ -209,15 +222,16 @@ def load_current_data():
     return df_init
 
 def load_comments():
-    return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
+    return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "اسم الزائر", "الفندق المستهدف", "التقييم (من 5)", "التعليق"])
 
 def load_messages():
     return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
 
 def load_bookings():
-    return pd.read_excel(bookings_filename) if os.path.exists(bookings_filename) else pd.DataFrame(columns=["الوقت", "اسم المعتمر", "رقم الهاتف", "الفندق المطلوبة", "عدد الأيام", "إجمالي السعر (د.ل)"])
+    return pd.read_excel(bookings_filename) if os.path.exists(bookings_filename) else pd.DataFrame(columns=["الوقت", "اسم المعتمر", "رقم الهاتف", "نوع الغرفة", "الفندق المطلوبة", "عدد الأيام", "إجمالي السعر (د.ل)", "حالة الطلب"])
 
 df = load_current_data()
+df_flights = get_flights_data()
 
 # --- 🔐 صلاحيات المدير والدخول ---
 st.header("🔐 صلاحيات النظام ودخول الإدارة")
@@ -225,11 +239,10 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، رفع صور الإعلانات، وقراءة الحجوزات والرسائل)")
+    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، إدارة الحالات، رفع صور الإعلانات، ومراجعة التقييمات والحجوزات)")
     
     st.markdown("### 🛠️ لوحة تحكم الأدمن: رفع وتحديث صور الإعلانات الأربعة")
     ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
-    
     with ad_col1:
         img1 = st.file_uploader("مربع الإعلان 1", type=["png", "jpg", "jpeg"], key="ad1")
         if img1:
@@ -280,27 +293,59 @@ st.markdown("---")
 st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (تصفح وفلترة وحجز آلي)")
 st.markdown("---")
 
-# --- 🧮 حاسبة الوقت والمسافة وزر خرائط جوجل ---
-st.subheader("🧮 حاسبة الوقت والمسافة للحرم والملاحة المباشرة")
+# --- 💡 مؤشرات ومميزات التميز الشاملة ---
+st.markdown("### 🏆 لماذا يفضل الزوار تصفح خدماتنا؟")
+tr_c1, tr_c2, tr_c3, tr_c4 = st.columns(4)
+tr_c1.success("⚡ **تأكيد آلي فوري**\nحجز مباشر بنقرة زر")
+tr_c2.info("🏨 **فنادق معتمدة**\nأكثر من 400 فندق بمكة والمدينة")
+tr_c3.warning("💵 **شفافية بالأسعار**\nحساب آلي دقيق بالعملة المحلية")
+tr_c4.error("📞 **دعم وتواصل**\nخدمة الزوار المباشرة")
+
+st.markdown("---")
+
+# --- 🧮 1. حاسبة تحويل العملات اللحظية + 2. حاسبة وقت الحرم ---
+st.subheader("🧮 حاسبة الوقت والمسافة ومحول العملات اللحظي")
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
 with calc_c1:
-    calc_dist = st.number_input("أدخل المسافة (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
-with calc_c2:
+    calc_dist = st.number_input("أدخل المسافة عن الحرم (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
     calc_mode = st.selectbox("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
+    if calc_mode == "🚶 مشياً على الأقدام":
+        st.success(f"⏱️ الوقت المتوقع: **{int(calc_dist * 12)} دقيقة**")
+    else:
+        st.success(f"⏱️ الوقت المتوقع بالحافلة: **{int(calc_dist * 4) + 5} دقيقة**")
+
+with calc_c2:
+    st.write("💱 **محول سعر الصرف (د.ل / USD):**")
+    usd_input = st.number_input("أدخل المبلغ بالدولار ($):", min_value=1, max_value=10000, value=100)
+    converted_lyd = round(usd_input * usd_to_lyd_rate, 2)
+    st.info(f"💵 القيمة المعادلة بالسوق الموازي: **{converted_lyd} دينار ليبي**")
+
 with calc_c3:
     st.write("")
     st.write("")
     maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%DAC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
     st.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
 
-if calc_mode == "🚶 مشياً على الأقدام":
-    est_time = int(calc_dist * 12)
-    st.success(f"⏱️ الوقت المتوقع مشياً: **{est_time} دقيقة**")
-else:
-    est_time = int(calc_dist * 4) + 5
-    st.success(f"⏱️ الوقت المتوقع بالحافلة: **{est_time} دقيقة** (مع الانتظار)")
+st.markdown("---")
 
+# --- 🕌 دليل المزارات والمعالم التفاعلي بـ مكة والمدينة ---
+st.subheader("🕌 دليل مزارات ومعالم مكة المكرمة والمدينة المنورة")
+mazar_c1, mazar_c2, mazar_c3, mazar_c4 = st.columns(4)
+with mazar_c1:
+    st.markdown("[🗺️ غار حراء - مكة](https://www.google.com/maps/search/?api=1&query=غار+حراء+مكة)", unsafe_allow_html=True)
+with mazar_c2:
+    st.markdown("[🗺️ جبل عرفات - مكة](https://www.google.com/maps/search/?api=1&query=جبل+عرفات+مكة)", unsafe_allow_html=True)
+with mazar_c3:
+    st.markdown("[🗺️ مسجد قباء - المدينة](https://www.google.com/maps/search/?api=1&query=مسجد+قباء+المدينة)", unsafe_allow_html=True)
+with mazar_c4:
+    st.markdown("[🗺️ جبل أحد - المدينة](https://www.google.com/maps/search/?api=1&query=جبل+أحد+المدينة)", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# --- ✈️ قسم تذاكر الطيران المتاحة (فقط بدون نقل بري) ---
+st.subheader("✈️ أسعار ومواعيد تذاكر الطيران المتاحة للمعتمرين")
+st.dataframe(df_flights, use_container_width=True)
 st.markdown("---")
 
 # --- 🔍 شريط البحث والتصفية الجانبي ---
@@ -320,7 +365,7 @@ if selected_district and 'المنطقة / الحي' in filtered_df.columns:
 if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
-# 🕶️ إخفاء عمود المعادل بالسوق الموازي عن الزوار وعرضه للأدمن فقط
+# إخفاء عمود المعادل بالسوق الموازي عن الزوار وعرضه للأدمن فقط
 display_df = filtered_df.copy()
 if not st.session_state["logged_in"]:
     if "المعادل بالسوق الموازي (د.ل)" in display_df.columns:
@@ -331,14 +376,13 @@ col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df
 if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
     col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
 
-# إظهار مؤشر سعر الصرف للأدمن فقط في الأعلى
 if st.session_state["logged_in"]:
     col3.metric("💵 سعر الصرف الموازي (9.92)", f"{usd_to_lyd_rate} د.ل")
 else:
     col3.metric("🌙 حالة الحجز", "متاح فوري")
 
 # 📋 عرض جدول الفنادق
-st.subheader("📋 جدول الفنادق المتاحة وأسعار الحجز النهائي (طريق الميقات)")
+st.subheader("📋 جدول الفنادق المتاحة وأسعار الحجز النهائي")
 
 st.data_editor(
     display_df,
@@ -360,13 +404,14 @@ st.data_editor(
 
 st.markdown("---")
 
-# 📝 استمارة حجز فندقي مباشر
-st.subheader("📝 استمارة طلب حجز فندقي مباشر للمعتمرين")
+# 📝 استمارة حجز فندقي مباشر (مع تحديد نوع الغرف للعائلات وإصدار الفاتورة بدون اسم وكالة)
+st.subheader("📝 استمارة طلب حجز فندقي مباشر للمعتمرين مع إصدار فاتورة مبدئية")
 with st.form("booking_form"):
     b_col1, b_col2 = st.columns(2)
     with b_col1:
         b_name = st.text_input("✍️ اسم المعتمر الثلاثي:")
         b_phone = st.text_input("📞 رقم الهاتف / الواتساب:")
+        room_type = st.selectbox("🪑 نوع الغرفة المطلوبة:", ["غرفة ثنائية (M2)", "غرفة ثلاثية (M3)", "غرفة رباعية (M4)", "جناح عائلي"])
     with b_col2:
         b_hotel = st.selectbox("🏨 اختر الفندق المطلوب:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
         b_days = st.number_input("📅 عدد أيام الإقامة:", min_value=1, max_value=30, value=3)
@@ -377,38 +422,100 @@ with st.form("booking_form"):
         if b_name.strip() and b_phone.strip():
             hotel_row = df[df["اسم الفندق"] == b_hotel]
             night_price = hotel_row["سعر الحجز النهائي (طريق الميقات د.ل)"].values[0] if not hotel_row.empty else 0
-            total_price = night_price * b_days
+            
+            # احتساب الفروقات في أنواع الغرف
+            multiplier = 1.0
+            if "ثلاثية" in room_type: multiplier = 1.25
+            elif "رباعية" in room_type: multiplier = 1.45
+            elif "جناح" in room_type: multiplier = 1.80
+            
+            total_price = round(night_price * b_days * multiplier, 2)
             
             df_b = load_bookings()
             new_b = {
                 "الوقت": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "اسم المعتمر": b_name,
                 "رقم الهاتف": b_phone,
+                "نوع الغرفة": room_type,
                 "الفندق المطلوبة": b_hotel,
                 "عدد الأيام": b_days,
-                "إجمالي السعر (د.ل)": total_price
+                "إجمالي السعر (د.ل)": total_price,
+                "حالة الطلب": "جديد"
             }
             pd.concat([df_b, pd.DataFrame([new_b])], ignore_index=True).to_excel(bookings_filename, index=False)
             
-            wa_text = urllib.parse.quote(f"طلب حجز جديد من طريق الميقات:\nالاسم: {b_name}\nالهاتف: {b_phone}\nالفندق: {b_hotel}\nالأيام: {b_days}\nالإجمالي: {total_price} د.ل")
+            wa_text = urllib.parse.quote(f"طلب حجز جديد:\nالاسم: {b_name}\nالهاتف: {b_phone}\nالغرفة: {room_type}\nالفندق: {b_hotel}\nالأيام: {b_days}\nالإجمالي: {total_price} د.ل")
             wa_link = f"https://wa.me/?text={wa_text}"
             
             st.success(f"🎉 تم تسجيل طلب حجزك بنجاح! الإجمالي المقدر: **{total_price} دينار ليبي**.")
             st.markdown(f"[📲 اضغط هنا لإرسال تأكيد الحجز مباشرة عبر واتساب الإدارة]({wa_link})")
+            
+            # 📄 فاتورة مبدئية خالية تماماً من اسم أي وكالة بناءً على طلبك
+            st.info("📄 **تفاصيل الفاتورة المبدئية لطلب الحجز الفندقي:**")
+            st.write(f"- **تاريخ الطلب:** {time.strftime('%Y-%m-%d')}")
+            st.write(f"- **اسم المعتمر / العميل:** {b_name}")
+            st.write(f"- **رقم التواصل:** {b_phone}")
+            st.write(f"- **الفندق المحجوز:** {b_hotel}")
+            st.write(f"- **نوع الغرفة:** {room_type}")
+            st.write(f"- **مدة الإقامة:** {b_days} أيام")
+            st.write(f"- **إجمالي المبلغ المستحق:** {total_price} دينار ليبي")
             st.balloons()
         else:
             st.error("⚠️ يرجى كتابة الاسم ورقم الهاتف لإكمال الطلب.")
 
 st.markdown("---")
 
+# --- ⭐ قسم تقييمات المعتمرين الحقيقية ---
+st.subheader("⭐ تقييمات وآراء المعتمرين السابقين")
+with st.form("review_form"):
+    r_col1, r_col2 = st.columns(2)
+    with r_col1:
+        r_name = st.text_input("✍️ اسمك الكريم:")
+        r_hotel = st.selectbox("🏨 الفندق الذي أقمتم فيه:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
+    with r_col2:
+        r_rating = st.slider("⭐ التقييم العام (من 5):", 1, 5, 5)
+        r_comment = st.text_area("💬 اترك تعليقك أو تجربتك:")
+    
+    submit_review = st.form_submit_button("📤 إرسال التقييم", use_container_width=True)
+    if submit_review:
+        if r_name.strip() and r_comment.strip():
+            df_c = load_comments()
+            new_c = {
+                "الوقت": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "اسم الزائر": r_name,
+                "الفندق المستهدف": r_hotel,
+                "التقييم (من 5)": r_rating,
+                "التعليق": r_comment
+            }
+            pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False)
+            st.success("🙏 شكراً لك! تم إضافة تقييمك بنجاح.")
+        else:
+            st.error("⚠️ يرجى كتابة الاسم والتعليق لإرسال التقييم.")
+
+df_reviews_display = load_comments()
+if not df_reviews_display.empty:
+    st.dataframe(df_reviews_display, use_container_width=True)
+
+st.markdown("---")
+
+# --- 🛠️ نظام متابعة وتحديث حالة الطلبات للأدمن ---
 if st.session_state["logged_in"]:
-    st.subheader("🛠️ لوحة تحكم المدير وقراءة الحجوزات والرسائل الواردة")
+    st.subheader("🛠️ لوحة تحكم المدير ومتابعة حالة الحجوزات والطلبات")
     adm_col1, adm_col2, adm_col3 = st.columns(3)
     with adm_col1: 
         st.subheader("📝 طلبات الحجز الفندقي")
-        st.dataframe(load_bookings(), use_container_width=True)
+        bookings_df = load_bookings()
+        st.dataframe(bookings_df, use_container_width=True)
+        if not bookings_df.empty:
+            b_index = st.number_input("أدخل رقم صف الطلب لتحديث حالته:", min_value=0, max_value=len(bookings_df)-1, step=1)
+            new_status = st.selectbox("تحديث حالة الطلب إلى:", ["جديد", "قيد المعالجة", "مؤكد", "مكتمل"])
+            if st.button("تحديث حالة الطلب"):
+                bookings_df.at[b_index, "حالة الطلب"] = new_status
+                bookings_df.to_excel(bookings_filename, index=False)
+                st.success("تم تحديث حالة الطلب بنجاح!")
+                st.rerun()
     with adm_col2: 
-        st.subheader("💬 تقييمات الفنادق")
+        st.subheader("💬 تقييمات المعتمرين")
         st.dataframe(load_comments(), use_container_width=True)
     with adm_col3: 
         st.subheader("📩 رسائل الزوار المباشرة")
