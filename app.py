@@ -12,69 +12,61 @@ st.set_page_config(page_title="نظام إدارة ونقل الفنادق ال�
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 st.title("🕋 النظام الشامل لإدارة وسائل نقل وفنادق مكة المكرمة بالكامل")
 
-excel_filename = "makkah_hotels_database_v3.xlsx"
-comments_filename = "visitor_comments_database_v3.xlsx"
-messages_filename = "visitor_messages_database_v3.xlsx"
+excel_filename = "hotel_transport_data_v2.xlsx"
+comments_filename = "hotel_visitor_comments.xlsx"
+messages_filename = "hotel_visitor_messages.xlsx"
 
 # 📊 قاعدة البيانات الكبرى المدمجة لجميع فنادق مكة المكرمة بالكامل بإحداثياتها الدقيقة لمطابقة خرائط جوجل
 def get_all_makkah_hotels():
     return [
-        {"اسم الفندق": "فندق أسطورة أعمار", "المنطقة / الحي": "العزيزية (محبس الجن)", "المسافة إلى الحرم (كم)": 2.0, "الوقت مشياً (دقيقة)": 25, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات ترددية", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "محبس الجن", "latitude": 21.4165, "longitude": 39.8450},
-        {"اسم الفندق": "فندق برايد جوي", "المنطقة / الحي": "العزيزية (محبس الجن)", "المسافة إلى الحرم (كم)": 1.8, "الوقت مشياً (دقيقة)": 22, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات ترددية", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "أمام الفندق", "latitude": 21.4172, "longitude": 39.8435},
-        {"اسم الفندق": "فندق ميدان", "المنطقة / الحي": "العزيزية الجنوبية", "المسافة إلى الحرم (كم)": 3.0, "الوقت مشياً (دقيقة)": 40, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "باص الفندق", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "بوابة الفندق", "latitude": 21.4050, "longitude": 39.8520},
-        {"اسم الفندق": "فندق ذرة طيبة", "المنطقة / الحي": "العزيزية (شارع الإحسان)", "المسافة إلى الحرم (كم)": 3.5, "الوقت مشياً (دقيقة)": 45, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "شتل ترددية", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "أوقات الصلوات", "موقع محطة الحافلة": "شارع الإحسان", "latitude": 21.4085, "longitude": 39.8590},
-        {"اسم الفندق": "فندق ضيافة الرجاء", "المنطقة / الحي": "الهجلة (شارع إبراهيم الخليل)", "المسافة إلى الحرم (كم)": 0.8, "الوقت مشياً (دقيقة)": 10, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "لا يتطلب باص", "موقع محطة الحافلة": "مشي مباشر", "latitude": 21.4150, "longitude": 39.8240},
-        {"اسم الفندق": "فندق اعمار جراند", "المنطقة / الحي": "الهجلة (شارع إبراهيم الخليل)", "المسافة إلى الحرم (كم)": 0.75, "الوقت مشياً (دقيقة)": 9, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "لا يتطلب باص", "موقع محطة الحافلة": "مشي مباشر", "latitude": 21.4155, "longitude": 39.8245},
-        {"اسم الفندق": "فندق الاباء", "المنطقة / الحي": "جرول (طريق أم القرى)", "المسافة إلى الحرم (كم)": 1.2, "الوقت مشياً (دقيقة)": 15, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات النقل الترددي", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "موقف جرول", "latitude": 21.4320, "longitude": 39.8180},
-        {"اسم الفندق": "فندق إعمار النور", "المنطقة / الحي": "العزيزية", "المسافة إلى الحرم (كم)": 3.0, "الوقت مشياً (دقيقة)": 30, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات شتل", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "الشارع الرئيسي", "latitude": 21.4120, "longitude": 39.8490},
-        {"اسم الفندق": "فندق فوكو مكة", "المنطقة / الحي": "المسفلة (شارع إبراهيم الخليل)", "المسافة إلى الحرم (كم)": 1.3, "الوقت مشياً (دقيقة)": 18, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "باصات شتل الفندق", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "24 ساعة", "موقع محطة الحافلة": "ساحة الفندق", "latitude": 21.4082, "longitude": 39.8239},
-        {"اسم الفندق": "فندق هيلتون جبل عمر", "المنطقة / الحي": "جبل عمر", "المسافة إلى الحرم (كم)": 0.3, "الوقت مشياً (دقيقة)": 4, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر لساحة الحرم", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "قريب جداً", "موقع محطة الحافلة": "مشي مباشر", "latitude": 21.4205, "longitude": 39.8230},
-        {"اسم الفندق": "فندق سويس مقام مكة", "المنطقة / الحي": "أبراج البيت", "المسافة إلى الحرم (كم)": 0.1, "الوقت مشياً (دقيقة)": 1, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "داخل الساحة مباشرة", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "مشي فوري", "موقع محطة الحافلة": "مشي عبر الأبراج", "latitude": 21.4190, "longitude": 39.8260}
+        {"اسم الفندق": "فندق أسطورة أعمار", "المنطقة / الحي": "العزيزية (محبس الجن)", "المسافة إلى الحرم (كم)": 2.0, "الوقت مشياً (دقيقة)": 25, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات مكة العامة / ترددية", "تكلفة النقل": "مجاني للمعتمرين", "مواعيد الخدمة": "على مدار 24 ساعة", "موقع محطة الحافلة": "ساحة محبس الجن الترددية", "latitude": 21.4165, "longitude": 39.8450},
+        {"اسم الفندق": "فندق برايد جوي", "المنطقة / الحي": "العزيزية (محبس الجن)", "المسافة إلى الحرم (كم)": 1.8, "الوقت مشياً (دقيقة)": 22, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات مكة العامة / ترددية", "تكلفة النقل": "مجاني للمعتمرين", "مواعيد الخدمة": "على مدار 24 ساعة", "موقع محطة الحافلة": "أمام الفندق مباشرة", "latitude": 21.4172, "longitude": 39.8435},
+        {"اسم الفندق": "فندق ميدان", "المنطقة / الحي": "العزيزية الجنوبية", "المسافة إلى الحرم (كم)": 3.0, "الوقت مشياً (دقيقة)": 40, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلة الفندق الخاصة / شتل", "تكلفة النقل": "مجاني للنزلاء", "مواعيد الخدمة": "أوقات الصلوات وعلى مدار الساعة", "موقع محطة الحافلة": "أمام بوابة الفندق الرئيسية", "latitude": 21.4050, "longitude": 39.8520},
+        {"اسم الفندق": "فندق ذرة طيبة", "المنطقة / الحي": "العزيزية (شارع الإحسان)", "المسافة إلى الحرم (كم)": 3.5, "الوقت مشياً (دقيقة)": 45, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات نقل ترددية / شتل", "تكلفة النقل": "مجاني عبر الحملات", "مواعيد الخدمة": "مواعيد الصلوات الترددية", "موقع محطة الحافلة": "محطة باصات شارع الإحسان", "latitude": 21.4085, "longitude": 39.8590},
+        {"اسم الفندق": "فندق ضيافة الرجاء", "المنطقة / الحي": "الهجلة (شارع إبراهيم الخليل)", "المسافة إلى الحرم (كم)": 0.8, "الوقت مشياً (دقيقة)": 10, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر (قريب جداً)", "تكلفة النقل": "مجاني (مشي)", "مواعيد الخدمة": "لا يتطلب وسيلة نقل", "موقع محطة الحافلة": "مشي مباشر عبر الشارع", "latitude": 21.4150, "longitude": 39.8240},
+        {"اسم الفندق": "فندق اعمار جراند", "المنطقة / الحي": "الهجلة (شارع إبراهيم الخليل)", "المسافة إلى الحرم (كم)": 0.75, "الوقت مشياً (دقيقة)": 9, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر (قريب جداً)", "تكلفة النقل": "مجاني (مشي)", "مواعيد الخدمة": "لا يتطلب وسيلة نقل", "موقع محطة الحافلة": "مشي مباشر عبر الشارع", "latitude": 21.4155, "longitude": 39.8245},
+        {"اسم الفندق": "فندق الاباء", "المنطقة / الحي": "جرول (طريق أم القرى)", "المسافة إلى الحرم (كم)": 1.2, "الوقت مشياً (دقيقة)": 15, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات سابتكو / النقل الترددي", "تكلفة النقل": "مجاني للمعتمرين", "مواعيد الخدمة": "على مدار 24 ساعة", "موقع محطة الحافلة": "موقف النقل الترددي بمنطقة جرول", "latitude": 21.4320, "longitude": 39.8180},
+        {"اسم الفندق": "فندق إعمار النور", "المنطقة / الحي": "العزيزية", "المسافة إلى الحرم (كم)": 3.0, "الوقت مشياً (دقيقة)": 30, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "محطة باص محبس الجن", "تكلفة النقل": "مجاني للنزلاء", "مواعيد الخدمة": "على مدار 24 ساعة", "موقع محطة الحافلة": "الشارع الرئيسي", "latitude": 21.4200, "longitude": 39.8300},
+        {"اسم الفندق": "فندق فوكو مكة", "المنطقة / الحي": "المسفلة (شارع إبراهيم الخليل)", "المسافة إلى الحرم (كم)": 1.3, "الوقت مشياً (دقيقة)": 28, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات ترددية خاصة بالفندق", "تكلفة النقل": "مجاني للنزلاء", "مواعيد الخدمة": "على مدار 24 ساعة", "موقع محطة الحافلة": "ساحة الفندق", "latitude": 21.4082, "longitude": 39.8239},
+        {"اسم الفندق": "فندق هيلتون جبل عمر", "المنطقة / الحي": "جبل عمر", "المسافة إلى الحرم (كم)": 0.3, "الوقت مشياً (دقيقة)": 4, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر ساحة الحرم", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "قريب جداً لا يتطلب", "موقع محطة الحافلة": "مشي مباشر", "latitude": 21.4205, "longitude": 39.8230},
+        {"اسم الفندق": "فندق سويس مقام مكة", "المنطقة / الحي": "أبراج البيت (وقف الملك عبدالعزيز)", "المسافة إلى الحرم (كم)": 0.1, "الوقت مشياً (دقيقة)": 1, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "داخل ساحة الحرم مباشرة", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "اتصال مباشر بالساحة", "موقع محطة الحافلة": "مشي عبر الأبراج", "latitude": 21.4190, "longitude": 39.8260},
+        {"اسم الفندق": "فندق أنوار المشاعر", "المنطقة / الحي": "العزيزية الشمالية", "المسافة إلى الحرم (كم)": 3.8, "الوقت مشياً (دقيقة)": 50, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات ترددية خاصة للشركة", "تكلفة النقل": "مجاني للمجموعات", "مواعيد الخدمة": "أوقات الصلوات", "موقع محطة الحافلة": "موقف الباصات الرئيسي", "latitude": 21.4150, "longitude": 39.8650},
+        {"اسم الفندق": "فندق ماريوت مكة", "المنطقة / الحي": "جبل عمر", "المسافة إلى الحرم (كم)": 0.5, "الوقت مشياً (دقيقة)": 7, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "لا يتطلب باص", "موقع محطة الحافلة": "ساحة جبل عمر", "latitude": 21.4210, "longitude": 39.8210},
+        {"اسم الفندق": "فندق رتاج الريان", "المنطقة / الحي": "الششة", "المسافة إلى الحرم (كم)": 4.0, "الوقت مشياً (دقيقة)": 55, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات مكة الترددية", "تكلفة النقل": "مجاني للمعتمرين", "مواعيد الخدمة": "على مدار 24 ساعة", "موقع محطة الحافلة": "محطة حافلات الششة", "latitude": 21.4310, "longitude": 39.8510},
+        {"اسم الفندق": "فندق شيراتون مكة جبل الكعبة", "المنطقة / الحي": "جبل الكعبة", "المسافة إلى الحرم (كم)": 1.0, "الوقت مشياً (دقيقة)": 12, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات شتل مجانية للحرم", "تكلفة النقل": "مجاني للنزلاء", "مواعيد الخدمة": "أوقات الصلوات", "موقع محطة الحافلة": "بوابة الفندق الخلفية", "latitude": 21.4280, "longitude": 39.8190},
+        {"اسم الفندق": "فندق فايز العزيزية", "المنطقة / الحي": "العزيزية", "المسافة إلى الحرم (كم)": 2.5, "الوقت مشياً (دقيقة)": 32, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات ترددية / محبس الجن", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "على مدار الساعة", "موقع محطة الحافلة": "أمام بوابة الفندق", "latitude": 21.4110, "longitude": 39.8480},
+        {"اسم الفندق": "فندق دار الإيمان إنتركونتيننتال", "المنطقة / الحي": "أجياد (صف أول)", "المسافة إلى الحرم (كم)": 0.15, "الوقت مشياً (دقيقة)": 2, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي مباشر لساحة الحرم", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "مشي فوري للصلوات", "موقع محطة الحافلة": "ساحة أجياد المباشرة", "latitude": 21.4195, "longitude": 39.8270},
+        {"اسم الفندق": "فندق صفوة الغفران", "المنطقة / الحي": "أبراج الصفوة (أجياد)", "المسافة إلى الحرم (كم)": 0.1, "الوقت مشياً (دقيقة)": 1, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "أمام الحرم مباشرة", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "لا يتطلب حافلة", "موقع محطة الحافلة": "مشي فوري", "latitude": 21.4185, "longitude": 39.8275},
+        {"اسم الفندق": "فندق الميريديان مكة", "المنطقة / الحي": "أجياد نفق كدي", "المسافة إلى الحرم (كم)": 1.5, "الوقت مشياً (دقيقة)": 20, "توفر حافلة نقل (Shuttle)": "نعم", "نوع وسيلة النقل": "حافلات الفندق الخاصة", "تكلفة النقل": "مجاني للنزلاء", "مواعيد الخدمة": "على مدار الساعة", "موقع محطة الحافلة": "نفق كدي أجياد", "latitude": 21.4100, "longitude": 39.8290},
+        {"اسم الفندق": "فندق مكة هيلتون للمؤتمرات", "المنطقة / الحي": "جبل عمر (الشبيكة)", "المسافة إلى الحرم (كم)": 0.6, "الوقت مشياً (دقيقة)": 8, "توفر حافلة نقل (Shuttle)": "لا", "نوع وسيلة النقل": "مشي سريع عبر نفق جبل عمر", "تكلفة النقل": "مجاني", "مواعيد الخدمة": "لا يتطلب وسيلة", "موقع محطة الحافلة": "بوابة جبل عمر", "latitude": 21.4215, "longitude": 39.8220}
     ]
 
-# 🔄 تحميل البيانات مع الضمان التلقائي لملء الجدول
 def load_current_data():
-    if os.path.exists(excel_filename):
-        try:
-            df_read = pd.read_excel(excel_filename)
-            if not df_read.empty:
-                return df_read
-        except Exception:
-            pass
-    # إذا كان الملف غير موجود أو فارغاً يتم إنشاؤه ممتلئاً بالبيانات
+    if os.path.exists(excel_filename): return pd.read_excel(excel_filename)
     df_init = pd.DataFrame(get_all_makkah_hotels())
-    df_init.to_excel(excel_filename, index=False)
-    return df_init
+    df_init.to_excel(excel_filename, index=False); return df_init
 
-def load_comments():
-    return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
+def load_comments(): return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
+def load_messages(): return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
 
-def load_messages():
-    return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
-
-# تحميل البيانات الفعلية
 df = load_current_data()
 
 # --- 🔐 جدار حماية الأدمن في أعلى الشاشة ---
 st.header("🔐 صلاحيات النظام ودخول الإدارة")
-if "logged_in" not in st.session_state: 
-    st.session_state["logged_in"] = False
+if "logged_in" not in st.session_state: st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
     st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل والحذف وقراءة الرسائل والتعليقات)")
     if st.button("🔒 تسجيل الخروج والعودة الفورية لوضع الزائر", use_container_width=True):
-        st.session_state["logged_in"] = False
-        st.rerun()
+        st.session_state["logged_in"] = False; st.rerun()
 else:
     admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والحذف:", type="password")
-    if admin_password == "1234": 
-        st.session_state["logged_in"] = True
-        st.rerun()
+    if admin_password == "1234": st.session_state["logged_in"] = True; st.rerun()
 
 st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر لشركة طريق الميقات (تصفح وفلترة كاملة)")
 st.markdown("---")
 
-# --- 🔍 شريط التصفية الجانبي (يسار الشاشة) ---
+# --- 🔍 شريط التصفية الجانبي (يسار الشاشة) لفرز الفنادق بالحي أو الاسم ---
 st.sidebar.header("🔍 خيارات البحث والفرز الشامل")
 search_query = st.sidebar.text_input("🔍 ابحث باسم أي فندق بمكة المكرمة:")
 selected_district = st.sidebar.multiselect("📍 فرز وتصفية حسب الحي/المنطقة بمكة:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else [])
@@ -82,21 +74,15 @@ max_distance = st.sidebar.slider("📏 أقصى مسافة عن الحرم (كم
 shuttle_only = st.sidebar.checkbox("🚌 عرض الفنادق التي توفر حافلات نقل فقط")
 
 filtered_df = df.copy()
-if max_distance and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['المسافة إلى الحرم (كم)'] <= max_distance]
-if search_query and 'اسم الفندق' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
-if selected_district and 'المنطقة / الحي' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
-if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
-    filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
+if max_distance and 'المسافة إلى الحرم (كم)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المسافة إلى الحرم (كم)'] <= max_distance]
+if search_query and 'اسم الفندق' in filtered_df.columns: filtered_df = filtered_df[filtered_df['اسم الفندق'].str.contains(search_query, case=False, na=False)]
+if selected_district and 'المنطقة / الحي' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
+if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
 col1, col2, col3 = st.columns(3)
 col1.metric("📊 إجمالي فنادق مكة المعروضة", len(filtered_df))
-if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
-    col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
-    col3.metric("🚌 فنادق توفر حافلات ترددية", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
+if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
+if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: col3.metric("🚌 فنادق توفر حافلات ترددية", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
 
 col_table, col_map = st.columns(2)
 with col_table:
@@ -129,29 +115,33 @@ if st.session_state["logged_in"]:
         if st.button("🎯 تحديث موقع الفندق إلى النقطة المحددة وتصحيحه", use_container_width=True):
             cdf = load_current_data()
             cdf.loc[cdf['اسم الفندق'] == hotel_to_update, ['latitude', 'longitude']] = [clicked_lat, clicked_lon]
-            cdf.to_excel(excel_filename, index=False)
-            st.success("🎯 تم بنجاح نقل وتعديل الموقع الجغرافي الفعلي لفندقك!")
-            time.sleep(0.5)
-            st.rerun()
+            cdf.to_excel(excel_filename, index=False); st.success("🎯 تم بنجاح نقل وتعديل الموقع الجغرافي الفعلي لفندقك!"); time.sleep(0.5); st.rerun()
     with c_del:
         st.subheader("🗑️ حذف وتطهير فندق من القائمة")
         hotel_to_delete = st.selectbox("❌ اختر الفندق لحذفه نهائياً من قاعدة البيانات:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else None)
         if st.button("🗑️ تأكيد الحذف ومسحه فوراً من الإكسيل", use_container_width=True):
             cdf = load_current_data()
-            cdf[cdf["اسم الفندق"] != hotel_to_delete].to_excel(excel_filename, index=False)
-            st.error("❌ تم حذف الفندق وتصفية البيانات نهائياً!")
-            time.sleep(0.5)
-            st.rerun()
+            cdf[cdf["اسم الفندق"] != hotel_to_delete].to_excel(excel_filename, index=False); st.error("❌ تم حذف الفندق وتصفية البيانات نهائياً!"); time.sleep(0.5); st.rerun()
     
     st.markdown("---")
     adm_col1, adm_col2 = st.columns(2)
-    with adm_col1: 
-        st.subheader("💬 تعليقات وتقييمات الفنادق الواردة")
-        st.dataframe(load_comments(), use_container_width=True)
-    with adm_col2: 
-        st.subheader("📩 رسائل واستفسارات الزوار المباشرة")
-        st.dataframe(load_messages(), use_container_width=True)
+    with adm_col1: st.subheader("💬 تعليقات وتقييمات الفنادق الواردة"); st.dataframe(load_comments(), use_container_width=True)
+    with adm_col2: st.subheader("📩 رسائل واستفسارات الزوار المباشرة"); st.dataframe(load_messages(), use_container_width=True)
 else:
+    # 🟢 لوحة تواصل الزوار الرسمية لشركة طريق الميقات فرع 11 يونيو (روابط موثقة وصناديق تعليقات ورسائل مبهجة)
+    st.subheader("🤝 لوحة تواصل الزوار والروابط الاجتماعية الرسمية لشركة طريق الميقات فرع 11 يونيو")
+    fb_link = "https://www.facebook.com/share/1DveNwUUvR/"
+    tiktok_link = "https://www.tiktok.com/@miqat_11june_branch?is_from_webapp=1&sender_device=pc"
+    maps_link = "https://maps.app.goo.gl/6VL4dgZ3EuWsj46XA?g_st=ac"
+    
+    link_c1, link_c2, link_c3, link_c4 = st.columns(4)
+    with link_c1: st.link_button("🌐 تابعنا على صفحة فيسبوك", fb_link, use_container_width=True)
+    with link_c2: st.link_button("🎵 تابعنا على حساب تيك توك", tiktok_link, use_container_width=True)
+    with link_c3: st.link_button("📍 زيارة موقعنا بجوجل ماب", maps_link, use_container_width=True)
+    with link_c4: 
+        if st.button("👍 الإعجاب السريع للمعتمرين", use_container_width=True): st.toast("❤️ شكرًا لك على إعجابك وتثمينك لخدماتنا!"); st.balloons()
+            
+    st.markdown("---")
     visitor_col1, visitor_col2 = st.columns(2)
     with visitor_col1:
         st.subheader("💬 إضافة تعليق ومراجعة مخصصة لفندق")
@@ -160,31 +150,19 @@ else:
         v_comment = st.text_area("✍️ اكتب مراجعتك أو تعليقك هنا حول الفندق والباص:", key="visitor_comment_box")
         if st.button("💬 نشر وإرسال التعليق فوراً", use_container_width=True):
             if v_comment.strip():
-                df_c = load_comments()
-                new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
-                pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False)
-                st.success("🎉 تم تسجيل مراجعتك وتعليقك بنجاح للشركة!")
-                st.balloons()
-                time.sleep(0.5)
-                st.rerun()
-            else: 
-                st.error("⚠️ اكتب تعليقك أولاً.")
+                df_c = load_comments(); new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
+                pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False); st.success("🎉 تم تسجيل مراجعتك وتعليقك بنجاح للشركة!"); st.balloons(); time.sleep(0.5); st.rerun()
+            else: st.error("⚠️ اكتب تعليقك أولاً.")
     with visitor_col2:
         st.subheader("📩 إرسال رسالة مباشرة واقتراح إلى الإدارة")
         v_name = st.text_input("✍️ اسمك الموقر (اختياري):", placeholder="مثال: معتمر من ليبيا")
         v_msg = st.text_area("✉️ اكتب نص رسالتك أو استفسارك هنا بالتفصيل:", key="visitor_message_box")
         if st.button("🚀 إرسال الرسالة إلى المدير فوراً", use_container_width=True):
             if v_msg.strip():
-                df_m = load_messages()
-                sender = v_name.strip() if v_name.strip() else "زائر مجهول"
+                df_m = load_messages(); sender = v_name.strip() if v_name.strip() else "زائر مجهول"
                 new_m = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الاسم": sender, "نص الرسالة": v_msg}
-                pd.concat([df_m, pd.DataFrame([new_m])], ignore_index=True).to_excel(messages_filename, index=False)
-                st.success("📥 تم إرسال رسالتك بنجاح وسيتطلع عليها المدير.")
-                st.balloons()
-                time.sleep(0.5)
-                st.rerun()
-            else: 
-                st.error("⚠️ اكتب نص الرسالة أولاً.")
+                pd.concat([df_m, pd.DataFrame([new_m])], ignore_index=True).to_excel(messages_filename, index=False); st.success("📥 تم إرسال رسالتك بنجاح وسيتطلع عليها المدير."); st.balloons(); time.sleep(0.5); st.rerun()
+            else: st.error("⚠️ اكتب نص الرسالة أولاً.")
 
 st.sidebar.markdown("---")
 if os.path.exists(excel_filename):
