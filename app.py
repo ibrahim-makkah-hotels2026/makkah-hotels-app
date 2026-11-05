@@ -12,9 +12,9 @@ st.set_page_config(page_title="نظام إدارة ونقل الفنادق ال�
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 st.title("🕋 النظام الشامل لإدارة وسائل نقل وفنادق مكة المكرمة بالكامل")
 
-excel_filename = "hotel_transport_data_v2.xlsx"
-comments_filename = "hotel_visitor_comments.xlsx"
-messages_filename = "hotel_visitor_messages.xlsx"
+excel_filename = "makkah_hotels_database_v3.xlsx"
+comments_filename = "visitor_comments_database_v3.xlsx"
+
 
 # 📊 قاعدة البيانات الكبرى المدمجة لجميع فنادق مكة المكرمة بالكامل بإحداثياتها الدقيقة لمطابقة خرائط جوجل
 def get_all_makkah_hotels():
