@@ -3,67 +3,81 @@ import pandas as pd
 import os
 import time
 import urllib.parse
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # 🕋 إعداد واجهة الصفحة والأيقونة العلوية للكعبة المشرفة
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
 
 # 🔒 جدار الأمان الذكي لإخفاء شريط جيت هاب وعلامة القط نهائياً عن الزوار
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
+
+# 📢 1. شريط إعلانات متحرك ومميز للإدارة في أعلى الصفحة
+st.markdown("""
+<div style="background-color: #1e3d59; color: white; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 15px;">
+    📢 مرحباً بكم في فرع 11 يونيو لشركة طريق الميقات | عروض رحلات العمرة الأسبوعية متوفرة الآن بأفضل الأسعار! 🌙
+</div>
+""", unsafe_allow_html=True)
+
 st.title("🕋 النظام الشامل لإدارة وسائل نقل وفنادق مكة المكرمة والمدينة المنورة")
 
-excel_filename = "makkah_madinah_full_hotels_v6.xlsx"
-comments_filename = "visitor_comments_database_v6.xlsx"
-messages_filename = "visitor_messages_database_v6.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v7.xlsx"
+comments_filename = "visitor_comments_database_v7.xlsx"
+messages_filename = "visitor_messages_database_v7.xlsx"
+bookings_filename = "visitor_bookings_database_v7.xlsx"
 
-# 📊 قاعدة البيانات الشاملة للفنادق مع توليد روابط خرائط جوجل مباشرة لكل فندق
+# 💵 2. تحديد سعر صرف الدينار الليبي في السوق الموازي (يمكن للمدير تعديله في أي وقت)
+usd_to_lyd_rate = 7.20  # سعر الصرف الموازي المتوقع للدولار
+profit_margin = 200.0   # الزيادة المقررة لشركة طريق الميقات
+
+# 📊 قاعدة البيانات الشاملة للفنادق مع إضافة أعمدة الأسعار والسوق الموازي
 def get_all_makkah_hotels():
     hotels = [
-        # --- 🕋 فنادق مكة المكرمة الرئيسية والمحيطة بالحرم والأحياء ---
-        ("أبراج مكة", "ساحة الحرم (أجياد)", 0.1),
-        ("فندق الشهداء بجوار بالم ريتش مكة", "أجياد", 0.5),
-        ("فندق هبة الله مكة المكرمة بإدارة أكورهوتلز", "شارع إبراهيم الخليل", 0.9),
-        ("أبراج الميريديان مكة المكرمة", "أجياد كدي", 1.5),
-        ("فندق منازل أجياد من إيلاف", "أجياد", 0.6),
-        ("فندق مكارم أجياد مكة", "أجياد", 0.5),
-        ("برستيج هوتيل (إكس إيلاف المشاعر)", "العزيزية", 3.0),
-        ("فندق الصفوة أوركيد", "أبراج البيت", 0.1),
-        ("بولمان زمزم مكة", "أبراج البيت", 0.1),
-        ("قصر رافلز مكة", "أبراج البيت", 0.05),
-        ("فندق دار التوحيد إنتركونتيننتال مكة المكرمة", "ساحة الحرم", 0.05),
-        ("فندق صفوة الغفران مكة", "أجياد", 0.1),
-        ("فندق مكارم البيت", "العزيزية", 3.2),
-        ("برج ساعة مكة الملكي، فندق فيرمونت", "أبراج البيت", 0.05),
-        ("المروة ريحان من روتانا", "أبراج البيت", 0.1),
-        ("فندق أنجم - مكة المكرمة", "جبل الكعبة", 0.4),
-        ("فندق شيراتون مكة جبل الكعبة", "جبل الكعبة", 1.0),
-        ("فندق جبل عمر ماريوت، مكة المكرمة", "جبل عمر", 0.5),
-        ("حياة ريجنسي جبل عمر مكة", "جبل عمر", 0.4),
-        ("كونراد جبل عمر، مكة المكرمة", "جبل عمر", 0.25),
-        ("سويس أوتيل مكة", "أبراج البيت", 0.1),
-        ("سويس أوتل المقام مكة", "أبراج البيت", 0.1),
-        ("فندق أسطورة أعمار", "العزيزية (محبس الجن)", 2.0),
-        ("فندق برايد جوي", "العزيزية (محبس الجن)", 1.8),
-        ("فندق ميدان", "العزيزية الجنوبية", 3.0),
-        ("فندق ذرة طيبة", "العزيزية (شارع الإحسان)", 3.5),
-        ("فندق ضيافة الرجاء", "الهجلة (شارع إبراهيم الخليل)", 0.8),
-        ("فندق اعمار جراند", "الهجلة (شارع إبراهيم الخليل)", 0.75),
-        ("فندق الاباء", "جرول (طريق أم القرى)", 1.2),
-        ("فندق إعمار النور", "العزيزية", 3.0),
-        ("فندق فوكو مكة", "المسفلة (شارع إبراهيم الخليل)", 1.3),
-        ("فندق هيلتون جبل عمر", "جبل عمر", 0.3),
-        ("فندق سويس مقام مكة", "أبراج البيت", 0.1),
+        # --- 🕋 فنادق مكة المكرمة الرئيسية ---
+        ("أبراج مكة", "ساحة الحرم (أجياد)", 0.1, 150),
+        ("فندق الشهداء بجوار بالم ريتش مكة", "أجياد", 0.5, 90),
+        ("فندق هبة الله مكة المكرمة بإدارة أكورهوتلز", "شارع إبراهيم الخليل", 0.9, 70),
+        ("أبراج الميريديان مكة المكرمة", "أجياد كدي", 1.5, 60),
+        ("فندق منازل أجياد من إيلاف", "أجياد", 0.6, 75),
+        ("فندق مكارم أجياد مكة", "أجياد", 0.5, 85),
+        ("برستيج هوتيل (إكس إيلاف المشاعر)", "العزيزية", 3.0, 45),
+        ("فندق الصفوة أوركيد", "أبراج البيت", 0.1, 160),
+        ("بولمان زمزم مكة", "أبراج البيت", 0.1, 155),
+        ("قصر رافلز مكة", "أبراج البيت", 0.05, 250),
+        ("فندق دار التوحيد إنتركونتيننتال مكة المكرمة", "ساحة الحرم", 0.05, 260),
+        ("فندق صفوة الغفران مكة", "أجياد", 0.1, 140),
+        ("فندق مكارم البيت", "العزيزية", 3.2, 40),
+        ("برج ساعة مكة الملكي، فندق فيرمونت", "أبراج البيت", 0.05, 230),
+        ("المروة ريحان من روتانا", "أبراج البيت", 0.1, 145),
+        ("فندق أنجم - مكة المكرمة", "جبل الكعبة", 0.4, 95),
+        ("فندق شيراتون مكة جبل الكعبة", "جبل الكعبة", 1.0, 80),
+        ("فندق جبل عمر ماريوت، مكة المكرمة", "جبل عمر", 0.5, 110),
+        ("حياة ريجنسي جبل عمر مكة", "جبل عمر", 0.4, 120),
+        ("كونراد جبل عمر، مكة المكرمة", "جبل عمر", 0.25, 135),
+        ("سويس أوتيل مكة", "أبراج البيت", 0.1, 150),
+        ("سويس أوتل المقام مكة", "أبراج البيت", 0.1, 150),
+        ("فندق أسطورة أعمار", "العزيزية (محبس الجن)", 2.0, 40),
+        ("فندق برايد جوي", "العزيزية (محبس الجن)", 1.8, 42),
+        ("فندق ميدان", "العزيزية الجنوبية", 3.0, 35),
+        ("فندق ذرة طيبة", "العزيزية (شارع الإحسان)", 3.5, 30),
+        ("فندق ضيافة الرجاء", "الهجلة (شارع إبراهيم الخليل)", 0.8, 65),
+        ("فندق اعمار جراند", "الهجلة (شارع إبراهيم الخليل)", 0.75, 68),
+        ("فندق الاباء", "جرول (طريق أم القرى)", 1.2, 50),
+        ("فندق إعمار النور", "العزيزية", 3.0, 35),
+        ("فندق فوكو مكة", "المسفلة (شارع إبراهيم الخليل)", 1.3, 75),
+        ("فندق هيلتون جبل عمر", "جبل عمر", 0.3, 125),
         
         # --- 💚 فنادق المدينة المنورة الرئيسية ---
-        ("فندق دار الهجرة انتركونتيننتال", "المنطقة المركزية - المدينة", 0.2),
-        ("فندق المدينة هيلتون", "المنطقة المركزية - المدينة", 0.3),
-        ("فندق ميلينيوم طيبة", "المنطقة المركزية - المدينة", 0.1),
-        ("فندق دار التقوى", "المنطقة المركزية - المدينة", 0.15),
-        ("فندق أنوار المدينة موفنبيك", "المنطقة المركزية - المدينة", 0.2),
-        ("فندق أوبروى", "المنطقة المركزية - المدينة", 0.1),
-        ("شذا المدينة", "المنطقة المركزية - المدينة", 0.25)
+        ("فندق دار الهجرة انتركونتيننتال", "المنطقة المركزية - المدينة", 0.2, 110),
+        ("فندق المدينة هيلتون", "المنطقة المركزية - المدينة", 0.3, 115),
+        ("فندق ميلينيوم طيبة", "المنطقة المركزية - المدينة", 0.1, 105),
+        ("فندق دار التقوى", "المنطقة المركزية - المدينة", 0.15, 130),
+        ("فندق أنوار المدينة موفنبيك", "المنطقة المركزية - المدينة", 0.2, 110),
+        ("فندق أوبروى", "المنطقة المركزية - المدينة", 0.1, 160),
+        ("شذا المدينة", "المنطقة المركزية - المدينة", 0.25, 120)
     ]
     
-    # قائمة باقي الفنادق التي أرسلتها
     additional_hotels = [
         "فندق أراك الشريعة أجياد", "فندق دار الفائزين", "فندق الجاد محبس", "فندق قصر العزيزية", "فندق مكارم مِنى", "فندق إيلاف بكة", 
         "فندق سرايا الضيافة", "فندق دار الريس", "فندق عبير العزيزية", "فندق بركة برهان", "فندق التوفيق بلازا", "فندق مكارم أم القرى", 
@@ -145,29 +159,31 @@ def get_all_makkah_hotels():
     ]
 
     data = []
-    # إدخال القائمة الأساسية
-    for name, area, d_val in hotels:
+    for name, area, d_val, base_price in hotels:
+        lyd_base = round(base_price * usd_to_lyd_rate, 2)
+        final_price_lyd = round(lyd_base + profit_margin, 2)
         maps_query = urllib.parse.quote(f"{name} مكة المكرمة")
         map_link = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
+        
         data.append({
             "اسم الفندق": name,
             "المنطقة / الحي": area,
             "المسافة إلى الحرم (كم)": d_val,
-            "الوقت مشياً (دقيقة)": int(d_val * 12) if d_val <= 1.5 else int(d_val * 10),
+            "السعر الأساسي ($)": base_price,
+            "المعادل بالسوق الموازي (د.ل)": lyd_base,
+            "سعر الحجز النهائي (طريق الميقات د.ل)": final_price_lyd,
             "توفر حافلة نقل (Shuttle)": "لا" if d_val <= 0.8 else "نعم",
-            "نوع وسيلة النقل": "مشي مباشر" if d_val <= 0.8 else "حافلات ترددية",
-            "تكلفة النقل": "مجاني",
-            "مواعيد الخدمة": "24 ساعة",
-            "موقع محطة الحافلة": "مشي مباشر" if d_val <= 0.8 else "أمام الفندق",
             "موقع الفندق على خرائط جوجل": map_link
         })
 
-    # إدخال باقي الفنادق مع روابط خرائط جوجل المباشرة
     for idx, name in enumerate(additional_hotels):
         d_val = round(1.0 + ((idx % 35) * 0.1), 2)
+        base_price = round(35 + (idx % 40), 2)
+        lyd_base = round(base_price * usd_to_lyd_rate, 2)
+        final_price_lyd = round(lyd_base + profit_margin, 2)
+        
         is_madinah = any(word in name for word in ["المدينة", "طيبة", "الروضة", "أنوار", "أوبروى"])
         city_keyword = "المدينة المنورة" if is_madinah else "مكة المكرمة"
-        
         maps_query = urllib.parse.quote(f"{name} {city_keyword}")
         map_link = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
         
@@ -175,12 +191,10 @@ def get_all_makkah_hotels():
             "اسم الفندق": name,
             "المنطقة / الحي": "المنطقة المركزية (المدينة)" if is_madinah else "مكة المكرمة (العزيزية/أجياد/المسفلة)",
             "المسافة إلى الحرم (كم)": d_val,
-            "الوقت مشياً (دقيقة)": int(d_val * 12),
+            "السعر الأساسي ($)": base_price,
+            "المعادل بالسوق الموازي (د.ل)": lyd_base,
+            "سعر الحجز النهائي (طريق الميقات د.ل)": final_price_lyd,
             "توفر حافلة نقل (Shuttle)": "نعم",
-            "نوع وسيلة النقل": "حافلات ترددية",
-            "تكلفة النقل": "مجاني",
-            "مواعيد الخدمة": "24 ساعة",
-            "موقع محطة الحافلة": "أمام الفندق",
             "موقع الفندق على خرائط جوجل": map_link
         })
     return data
@@ -203,6 +217,9 @@ def load_comments():
 def load_messages():
     return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
 
+def load_bookings():
+    return pd.read_excel(bookings_filename) if os.path.exists(bookings_filename) else pd.DataFrame(columns=["الوقت", "اسم المعتمر", "رقم الهاتف", "الفندق المطلوبة", "عدد الأيام", "إجمالي السعر (د.ل)"])
+
 df = load_current_data()
 
 # --- 🔐 صلاحيات المدير ---
@@ -211,7 +228,7 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل والحذف وقراءة الرسائل والتعليقات)")
+    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل والحذف وقراءة الرسائل وطلبات الحجز)")
     if st.button("🔒 تسجيل الخروج والعودة الفورية لوضع الزائر", use_container_width=True):
         st.session_state["logged_in"] = False
         st.rerun()
@@ -221,15 +238,28 @@ else:
         st.session_state["logged_in"] = True
         st.rerun()
 
-st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر لشركة طريق الميقات (تصفح وفلترة كاملة)")
+st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر لشركة طريق الميقات (تصفح وفلترة وحجز آلي)")
 st.markdown("---")
+
+# --- 🧮 3. حاسبة وقت الرحلة للحرم في الشريط الجانبي ---
+st.sidebar.header("🧮 حاسبة الوقت والمسافة للحرم")
+calc_dist = st.sidebar.number_input("أدخل المسافة (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
+calc_mode = st.sidebar.radio("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
+if calc_mode == "🚶 مشياً على الأقدام":
+    est_time = int(calc_dist * 12)
+    st.sidebar.success(f"⏱️ الوقت المتوقع مشياً: **{est_time} دقيقة**")
+else:
+    est_time = int(calc_dist * 4) + 5
+    st.sidebar.success(f"⏱️ الوقت المتوقع بالحافلة: **{est_time} دقيقة** (مع الانتظار)")
+
+st.sidebar.markdown("---")
 
 # --- 🔍 شريط البحث والتصفية الجانبي ---
 st.sidebar.header("🔍 خيارات البحث والفرز الشامل")
 search_query = st.sidebar.text_input("🔍 ابحث باسم أي فندق:")
-selected_district = st.sidebar.multiselect("📍 فرز وتصفية حسب الحي/المنطقة:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else [])
+selected_district = st.sidebar.multiselect("📍 فرز حسب الحي/المنطقة:", options=df["المنطقة / الحي"].unique() if "المنطقة / الحي" in df.columns else [])
 max_distance = st.sidebar.slider("📏 أقصى مسافة عن الحرم (كم):", 0.0, 10.0, 10.0, 0.1)
-shuttle_only = st.sidebar.checkbox("🚌 عرض الفنادق التي توفر حافلات نقل فقط")
+shuttle_only = st.sidebar.checkbox("🚌 عرض الفنادق التي توفر حافلات فقط")
 
 filtered_df = df.copy()
 if max_distance and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
@@ -245,22 +275,24 @@ col1, col2, col3 = st.columns(3)
 col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
 if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
     col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
-    col3.metric("🚌 فنادق توفر حافلات ترددية", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
+col3.metric("💵 سعر الصرف الموازي المعتمد", f"{usd_to_lyd_rate} د.ل")
 
-# عرض الجدول فقط بشكل أنيق ومنظم واحترافي بالكامل بدون خريطة مزدحمة
-st.subheader("📋 جدول الفنادق المتاحة وتفاصيل النقل ومواقع خرائط جوجل المباشرة")
-st.markdown("💡 **ملاحظة للزوار:** يمكنك النقر مباشرة على أي رابط في عمود **(موقع الفندق على خرائط جوجل)** ليتم فتح الموقع ودبوس الفندق على تطبيق خرائط جوجل فوراً.")
+# 📋 عرض جدول الفنادق المطور مع الأسعار
+st.subheader("📋 جدول الفنادق المتاحة وأسعار الحجز النهائي (طريق الميقات)")
 
 st.data_editor(
     filtered_df,
     use_container_width=True,
-    height=500,
+    height=450,
     column_config={
         "موقع الفندق على خرائط جوجل": st.column_config.LinkColumn(
             "📍 موقع الفندق على خرائط جوجل",
             help="اضغط هنا لفتح موقع الفندق مباشرة في خرائط جوجل",
             display_text="🗺️ فتح الموقع في خرائط جوجل"
+        ),
+        "سعر الحجز النهائي (طريق الميقات د.ل)": st.column_config.NumberColumn(
+            "💰 السعر النهائي (د.ل)",
+            format="%.2f د.ل"
         )
     },
     disabled=True if not st.session_state["logged_in"] else False
@@ -268,14 +300,63 @@ st.data_editor(
 
 st.markdown("---")
 
+# 📝 2. استمارة حجز فندقي مباشر وإرسال الطلبات للبريد الإيميل
+st.subheader("📝 2. استمارة طلب حجز فندقي مباشر للمعتمرين")
+st.write("أدخل بياناتك وسيتم إرسال طلب الحجز آلياً لبريد شركة طريق الميقات لتأكيد الغرفة:")
+
+with st.form("booking_form"):
+    b_col1, b_col2 = st.columns(2)
+    with b_col1:
+        b_name = st.text_input("✍️ اسم المعتمر الثلاثي:")
+        b_phone = st.text_input("📞 رقم الهاتف / الواتساب:")
+    with b_col2:
+        b_hotel = st.selectbox("🏨 اختر الفندق المطلوب:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else [])
+        b_days = st.number_input("📅 عدد أيام الإقامة:", min_value=1, max_value=30, value=3)
+    
+    submit_booking = st.form_submit_button("🚀 تأكيد وإرسال طلب الحجز للإدارة", use_container_width=True)
+    
+    if submit_booking:
+        if b_name.strip() and b_phone.strip():
+            # حساب الإجمالي
+            hotel_row = df[df["اسم الفندق"] == b_hotel]
+            night_price = hotel_row["سعر الحجز النهائي (طريق الميقات د.ل)"].values[0] if not hotel_row.empty else 0
+            total_price = night_price * b_days
+            
+            # حفظ الطلب في ملف الحجوزات
+            df_b = load_bookings()
+            new_b = {
+                "الوقت": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "اسم المعتمر": b_name,
+                "رقم الهاتف": b_phone,
+                "الفندق المطلوبة": b_hotel,
+                "عدد الأيام": b_days,
+                "إجمالي السعر (د.ل)": total_price
+            }
+            pd.concat([df_b, pd.DataFrame([new_b])], ignore_index=True).to_excel(bookings_filename, index=False)
+            
+            # 📲 4. توليد رابط إرسال تفاصيل الحجز عبر واتساب للإدارة
+            wa_text = urllib.parse.quote(f"طلب حجز جديد من طريق الميقات:\nالاسم: {b_name}\nالهاتف: {b_phone}\nالفندق: {b_hotel}\nالأيام: {b_days}\nالإجمالي: {total_price} د.ل")
+            wa_link = f"https://wa.me/?text={wa_text}"
+            
+            st.success(f"🎉 تم تسجيل طلب حجزك بنجاح! الإجمالي المقدر: **{total_price} دينار ليبي**.")
+            st.markdown(f"[📲 اضغط هنا لإرسال تأكيد الحجز مباشرة عبر واتساب الإدارة]({wa_link})")
+            st.balloons()
+        else:
+            st.error("⚠️ يرجى كتابة الاسم ورقم الهاتف لإكمال الطلب.")
+
+st.markdown("---")
+
 if st.session_state["logged_in"]:
-    st.subheader("🛠️ لوحة تحكم المدير وقراءة الرسائل والتعليقات الواردة")
-    adm_col1, adm_col2 = st.columns(2)
+    st.subheader("🛠️ لوحة تحكم المدير وقراءة الحجوزات والرسائل الواردة")
+    adm_col1, adm_col2, adm_col3 = st.columns(3)
     with adm_col1: 
-        st.subheader("💬 تعليقات وتقييمات الفنادق الواردة")
-        st.dataframe(load_comments(), use_container_width=True)
+        st.subheader("📝 طلبات الحجز الفندقي")
+        st.dataframe(load_bookings(), use_container_width=True)
     with adm_col2: 
-        st.subheader("📩 رسائل واستفسارات الزوار المباشرة")
+        st.subheader("💬 تقييمات الفنادق")
+        st.dataframe(load_comments(), use_container_width=True)
+    with adm_col3: 
+        st.subheader("📩 رسائل الزوار المباشرة")
         st.dataframe(load_messages(), use_container_width=True)
 else:
     st.subheader("🤝 لوحة تواصل الزوار")
@@ -291,43 +372,8 @@ else:
         if st.button("👍 الإعجاب السريع للمعتمرين", use_container_width=True): 
             st.toast("❤️ شكرًا لك على إعجابك وتثمينك لخدماتنا!")
             st.balloons()
-            
-    st.markdown("---")
-    visitor_col1, visitor_col2 = st.columns(2)
-    with visitor_col1:
-        st.subheader("💬 إضافة تعليق ومراجعة مخصصة لفندق")
-        v_hotel = st.selectbox("🎯 اختر الفندق المراد تقييمه:", options=df["اسم الفندق"].unique() if "اسم الفندق" in df.columns else None)
-        v_rating = st.select_slider("⭐ اختر تقييمك للفندق:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"])
-        v_comment = st.text_area("✍️ اكتب مراجعتك أو تعليقك هنا حول الفندق والباص:", key="visitor_comment_box")
-        if st.button("💬 نشر وإرسال التعليق فوراً", use_container_width=True):
-            if v_comment.strip():
-                df_c = load_comments()
-                new_c = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الفندق المستهدف": v_hotel, "التقييم": v_rating, "التعليق": v_comment}
-                pd.concat([df_c, pd.DataFrame([new_c])], ignore_index=True).to_excel(comments_filename, index=False)
-                st.success("🎉 تم تسجيل مراجعتك وتعليقك بنجاح للشركة!")
-                st.balloons()
-                time.sleep(0.5)
-                st.rerun()
-            else: 
-                st.error("⚠️ اكتب تعليقك أولاً.")
-    with visitor_col2:
-        st.subheader("📩 إرسال رسالة مباشرة واقتراح إلى الإدارة")
-        v_name = st.text_input("✍️ اسمك الموقر (اختياري):", placeholder="مثال: معتمر من ليبيا")
-        v_msg = st.text_area("✉️ اكتب نص رسالتك أو استفسارك هنا بالتفصيل:", key="visitor_message_box")
-        if st.button("🚀 إرسال الرسالة إلى المدير فوراً", use_container_width=True):
-            if v_msg.strip():
-                df_m = load_messages()
-                sender = v_name.strip() if v_name.strip() else "زائر مجهول"
-                new_m = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الاسم": sender, "نص الرسالة": v_msg}
-                pd.concat([df_m, pd.DataFrame([new_m])], ignore_index=True).to_excel(messages_filename, index=False)
-                st.success("📥 تم إرسال رسالتك بنجاح وسيتطلع عليها المدير.")
-                st.balloons()
-                time.sleep(0.5)
-                st.rerun()
-            else: 
-                st.error("⚠️ اكتب نص الرسالة أولاً.")
 
 st.sidebar.markdown("---")
 if os.path.exists(excel_filename):
     with open(excel_filename, "rb") as file:
-        st.sidebar.download_button(label="📥 تنزيل جدول الفنادق الحالي كملف Excel", data=file, file_name=excel_filename, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.sidebar.download_button(label="📥 تنزيل جدول الفنادق والأسعار كملف Excel", data=file, file_name=excel_filename, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
