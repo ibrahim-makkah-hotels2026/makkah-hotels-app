@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import time
 import urllib.parse
+from PIL import Image
 
 # 🕋 إعداد واجهة الصفحة والأيقونة العلوية للكعبة المشرفة
 st.set_page_config(page_title="نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
@@ -17,34 +18,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 🖼️ 4 مربعات إعلانية فارغة تتيح للإدارة رفع وتغيير الصور مباشرة
-st.write("### 🏷️ مساحات العروض الإعلانية:")
-ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
+# ملفات حفظ صور الإعلانات مؤقتاً لتظهر للزوار تلقائياً
+ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
 
-with ad_col1:
-    img1 = st.file_uploader("مربع الإعلان 1", type=["png", "jpg", "jpeg"], key="ad1")
-    if img1:
-        st.image(img1, use_container_width=True)
-with ad_col2:
-    img2 = st.file_uploader("مربع الإعلان 2", type=["png", "jpg", "jpeg"], key="ad2")
-    if img2:
-        st.image(img2, use_container_width=True)
-with ad_col3:
-    img3 = st.file_uploader("مربع الإعلان 3", type=["png", "jpg", "jpeg"], key="ad3")
-    if img3:
-        st.image(img3, use_container_width=True)
-with ad_col4:
-    img4 = st.file_uploader("مربع الإعلان 4", type=["png", "jpg", "jpeg"], key="ad4")
-    if img4:
-        st.image(img4, use_container_width=True)
-
-st.markdown("---")
-st.title("🕋 النظام الشامل لإدارة وسائل نقل وفنادق مكة المكرمة والمدينة المنورة")
-
-excel_filename = "makkah_madinah_full_hotels_v10.xlsx"
-comments_filename = "visitor_comments_database_v10.xlsx"
-messages_filename = "visitor_messages_database_v10.xlsx"
-bookings_filename = "visitor_bookings_database_v10.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v11.xlsx"
+comments_filename = "visitor_comments_database_v11.xlsx"
+messages_filename = "visitor_messages_database_v11.xlsx"
+bookings_filename = "visitor_bookings_database_v11.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
@@ -167,7 +147,7 @@ def get_all_makkah_hotels():
         "فندق صن رايز المدينة المنورة", "فندق هوليداي فيلا المدينة", "أجنحة طيبة أراك", "رويال ان النخبة", "فندق نزل رويال إن",
         "فندق جولدن توليب المكتان", "فندق غراند الاندلس", "فندق سرايا طابة", "فندق حياة انترناشونال المدينة", "فندق نزل الشاكرين",
         "فندق زوار انترناشيونال", "فندق سفراء الهدى", "فندق دار النعيم", "فندق الإيمان القبلة", "فندق مودة الصفوة", "فندق مودة الواحة",
-        "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "فندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العليان",
+        "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "fندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العليان",
         "الفيروز الماسي (فندق جلوريا المدينة)", "فندق ماريوت المدينة", "فندق وكن الحرم النبوي", "فندق العقيق آراك",
         "فندق ديار انترناشونال", "فندق المني كريم راديسون بلو المدينة", "فندق رويال ديار", "فندق المدينة أراماس", "فندق روضة مبارك", "فندق الإشراق",
         "فندق الوسام", "فندق زهرة مبارك", "فندق أريس الجوار", "فندق رمادا", "فندق ديار المدينة", "فندق روضة الأمل", "فندق زمرد قرطاج",
@@ -240,27 +220,70 @@ def load_bookings():
 
 df = load_current_data()
 
-# --- 🔐 صلاحيات المدير ---
+# --- 🔐 صلاحيات المدير والدخول ---
 st.header("🔐 صلاحيات النظام ودخول الإدارة")
 if "logged_in" not in st.session_state: 
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل والحذف وقراءة الحجوزات والرسائل)")
-    if st.button("🔒 تسجيل الخروج والعودة الفورية لوضع الزائر", use_container_width=True):
+    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، رفع صور الإعلانات، وقراءة الحجوزات والرسائل)")
+    
+    # 🖼️ أدوات رفع صور الإعلانات (تظهر للأدمن فقط هنا)
+    st.markdown("### 🛠️ لوحة تحكم الأدمن: رفع وتحديث صور الإعلانات الأربعة")
+    ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
+    
+    with ad_col1:
+        img1 = st.file_uploader("مربع الإعلان 1", type=["png", "jpg", "jpeg"], key="ad1")
+        if img1:
+            Image.open(img1).save(ad_img_paths[0])
+            st.success("تم تحديث الإعلان 1!")
+    with ad_col2:
+        img2 = st.file_uploader("مربع الإعلان 2", type=["png", "jpg", "jpeg"], key="ad2")
+        if img2:
+            Image.open(img2).save(ad_img_paths[1])
+            st.success("تم تحديث الإعلان 2!")
+    with ad_col3:
+        img3 = st.file_uploader("مربع الإعلان 3", type=["png", "jpg", "jpeg"], key="ad3")
+        if img3:
+            Image.open(img3).save(ad_img_paths[2])
+            st.success("تم تحديث الإعلان 3!")
+    with ad_col4:
+        img4 = st.file_uploader("مربع الإعلان 4", type=["png", "jpg", "jpeg"], key="ad4")
+        if img4:
+            Image.open(img4).save(ad_img_paths[3])
+            st.success("تم تحديث الإعلان 4!")
+            
+    if st.button("🔒 تسجيل الخروج والعودة لوضع الزوار", use_container_width=True):
         st.session_state["logged_in"] = False
         st.rerun()
 else:
-    admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والحذف:", type="password")
+    admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والإعلانات:", type="password")
     if admin_password == "1234": 
         st.session_state["logged_in"] = True
         st.rerun()
 
-# تعديل نص حالة التصفح (بدون ذكر اسم الشركة بناءً على طلبك)[span_1](start_span)[span_1](end_span)
+# عرض مساحات الإعلانات للجميع (إذا رفعت صور تظهر، وإن لم ترفع تظهر مربعات نظيفة وفارغة بدون أزرار رفع للزوار)
+st.write("### 🏷️ مساحات العروض الإعلانية:")
+p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+with p_col1:
+    if os.path.exists(ad_img_paths[0]): st.image(ad_img_paths[0], use_container_width=True)
+    else: st.info("مربع إعلان 1 فارغ")
+with p_col2:
+    if os.path.exists(ad_img_paths[1]): st.image(ad_img_paths[1], use_container_width=True)
+    else: st.info("مربع إعلان 2 فارغ")
+with p_col3:
+    if os.path.exists(ad_img_paths[2]): st.image(ad_img_paths[2], use_container_width=True)
+    else: st.info("مربع إعلان 3 فارغ")
+with p_col4:
+    if os.path.exists(ad_img_paths[3]): st.image(ad_img_paths[3], use_container_width=True)
+    else: st.info("مربع إعلان 4 فارغ")
+
+st.markdown("---")
+# تعديل نص حالة التصفح (بدون ذكر اسم الشركة)[span_0](start_span)[span_0](end_span)
 st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (تصفح وفلترة وحجز آلي)")
 st.markdown("---")
 
-# --- 🧮 حاسبة الوقت والمسافة وزر خرائط جوجل (مثبتة وثابتة في الواجهة الرئيسية وليست في الشريط الجانبي) ---
+# --- 🧮 حاسبة الوقت والمسافة وزر خرائط جوجل (مثبتة في الواجهة الرئيسية) ---
 st.subheader("🧮 حاسبة الوقت والمسافة للحرم والملاحة المباشرة")
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
