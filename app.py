@@ -11,7 +11,7 @@ st.set_page_config(page_title="نظام إدارة ونقل الفنادق ال�
 # 🔒 جدار الأمان الذكي لإخفاء شريط جيت هاب
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-# 📢 شريط الإعلان المطور مع شريط عاجل للرحلات (ميزة العد التنازلي والتنبيه)
+# 📢 شريط الإعلان المطور
 st.markdown("""
 <div style="background-color: #1e3d59; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
     🌙 عروض و رحلات العمرة متوفرة بأفضل الأسعار
@@ -23,15 +23,15 @@ st.markdown("""
 
 ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
 
-excel_filename = "makkah_madinah_full_hotels_v14.xlsx"
-comments_filename = "visitor_comments_database_v14.xlsx"
-messages_filename = "visitor_messages_database_v14.xlsx"
-bookings_filename = "visitor_bookings_database_v14.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v15.xlsx"
+comments_filename = "visitor_comments_database_v15.xlsx"
+messages_filename = "visitor_messages_database_v15.xlsx"
+bookings_filename = "visitor_bookings_database_v15.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
 
-# 📊 قاعدة البيانات الشاملة لجميع الفنادق (أكثر من 400 فندق)
+# 📊 قاعدة البيانات الشاملة لجميع الفنادق
 def get_all_makkah_hotels():
     primary_hotels = [
         ("أبراج مكة", "ساحة الحرم (أجياد)", 0.1, 150),
@@ -199,7 +199,7 @@ def get_all_makkah_hotels():
         })
     return data
 
-# جدول تذاكر الطيران (قسم تذاكر الطيران فقط بدون نقل بري)
+# جدول تذاكر الطيران
 def get_flights_data():
     flights = [
         ("طرابلس (TIP) -> جدة (JED)", "الخطوط الجوية الأفريقية", "مباشر", "2,850 د.ل"),
@@ -303,7 +303,7 @@ tr_c4.error("📞 **دعم وتواصل**\nخدمة الزوار المباشر�
 
 st.markdown("---")
 
-# --- 🧮 1. حاسبة تحويل العملات اللحظية + 2. حاسبة وقت الحرم ---
+# --- 🧮 حاسبة الوقت ومحول العملات ---
 st.subheader("🧮 حاسبة الوقت والمسافة ومحول العملات اللحظي")
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
@@ -329,21 +329,21 @@ with calc_c3:
 
 st.markdown("---")
 
-# --- 🕌 دليل المزارات والمعالم التفاعلي بـ مكة والمدينة ---
-st.subheader("🕌 دليل مزارات ومعالم مكة المكرمة والمدينة المنورة")
+# --- 🕌 دليل مزارات المدينة المنورة (محدث حسب طلبك) ---
+st.subheader("🕌 دليل مزارات المدينة المنورة")
 mazar_c1, mazar_c2, mazar_c3, mazar_c4 = st.columns(4)
 with mazar_c1:
-    st.markdown("[🗺️ غار حراء - مكة](https://www.google.com/maps/search/?api=1&query=غار+حراء+مكة)", unsafe_allow_html=True)
+    st.markdown("[🗺️ مسجد قباء - المدينة](https://www.google.com/maps/search/?api=1&query=مسجد+قباء+المدينة+المنورة)", unsafe_allow_html=True)
 with mazar_c2:
-    st.markdown("[🗺️ جبل عرفات - مكة](https://www.google.com/maps/search/?api=1&query=جبل+عرفات+مكة)", unsafe_allow_html=True)
+    st.markdown("[🗺️ مقبرة شهداء جبل أحد](https://www.google.com/maps/search/?api=1&query=مقبرة+شهداء+جبل+أحد+المدينة+المنورة)", unsafe_allow_html=True)
 with mazar_c3:
-    st.markdown("[🗺️ مسجد قباء - المدينة](https://www.google.com/maps/search/?api=1&query=مسجد+قباء+المدينة)", unsafe_allow_html=True)
+    st.markdown("[🗺️ أسواق التمور - المدينة](https://www.google.com/maps/search/?api=1&query=سوق+التمور+المركزي+المدينة+المنورة)", unsafe_allow_html=True)
 with mazar_c4:
-    st.markdown("[🗺️ جبل أحد - المدينة](https://www.google.com/maps/search/?api=1&query=جبل+أحد+المدينة)", unsafe_allow_html=True)
+    st.markdown("[🗺️ زيارة الروضة الشريفة](https://www.google.com/maps/search/?api=1&query=المسجد+النبوي+الروضة+الشريفة)", unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- ✈️ قسم تذاكر الطيران المتاحة (فقط بدون نقل بري) ---
+# --- ✈️ قسم تذاكر الطيران المتاحة ---
 st.subheader("✈️ أسعار ومواعيد تذاكر الطيران المتاحة للمعتمرين")
 st.dataframe(df_flights, use_container_width=True)
 st.markdown("---")
@@ -365,7 +365,7 @@ if selected_district and 'المنطقة / الحي' in filtered_df.columns:
 if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
-# إخفاء عمود المعادل بالسوق الموازي عن الزوار وعرضه للأدمن فقط
+# إخفاء عمود المعادل بالسوق الموازي عن الزوار
 display_df = filtered_df.copy()
 if not st.session_state["logged_in"]:
     if "المعادل بالسوق الموازي (د.ل)" in display_df.columns:
@@ -404,7 +404,7 @@ st.data_editor(
 
 st.markdown("---")
 
-# 📝 استمارة حجز فندقي مباشر (مع تحديد نوع الغرف للعائلات وإصدار الفاتورة بدون اسم وكالة)
+# 📝 استمارة حجز فندقي مباشر
 st.subheader("📝 استمارة طلب حجز فندقي مباشر للمعتمرين مع إصدار فاتورة مبدئية")
 with st.form("booking_form"):
     b_col1, b_col2 = st.columns(2)
@@ -423,7 +423,6 @@ with st.form("booking_form"):
             hotel_row = df[df["اسم الفندق"] == b_hotel]
             night_price = hotel_row["سعر الحجز النهائي (طريق الميقات د.ل)"].values[0] if not hotel_row.empty else 0
             
-            # احتساب الفروقات في أنواع الغرف
             multiplier = 1.0
             if "ثلاثية" in room_type: multiplier = 1.25
             elif "رباعية" in room_type: multiplier = 1.45
@@ -450,7 +449,6 @@ with st.form("booking_form"):
             st.success(f"🎉 تم تسجيل طلب حجزك بنجاح! الإجمالي المقدر: **{total_price} دينار ليبي**.")
             st.markdown(f"[📲 اضغط هنا لإرسال تأكيد الحجز مباشرة عبر واتساب الإدارة]({wa_link})")
             
-            # 📄 فاتورة مبدئية خالية تماماً من اسم أي وكالة بناءً على طلبك
             st.info("📄 **تفاصيل الفاتورة المبدئية لطلب الحجز الفندقي:**")
             st.write(f"- **تاريخ الطلب:** {time.strftime('%Y-%m-%d')}")
             st.write(f"- **اسم المعتمر / العميل:** {b_name}")
@@ -465,7 +463,7 @@ with st.form("booking_form"):
 
 st.markdown("---")
 
-# --- ⭐ قسم تقييمات المعتمرين الحقيقية ---
+# --- ⭐ تقييمات المعتمرين ---
 st.subheader("⭐ تقييمات وآراء المعتمرين السابقين")
 with st.form("review_form"):
     r_col1, r_col2 = st.columns(2)
@@ -498,7 +496,7 @@ if not df_reviews_display.empty:
 
 st.markdown("---")
 
-# --- 🛠️ نظام متابعة وتحديث حالة الطلبات للأدمن ---
+# --- 🛠️ لوحة تحكم المدير ---
 if st.session_state["logged_in"]:
     st.subheader("🛠️ لوحة تحكم المدير ومتابعة حالة الحجوزات والطلبات")
     adm_col1, adm_col2, adm_col3 = st.columns(3)
