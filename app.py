@@ -91,12 +91,7 @@ if search_query and 'اسم الفندق' in filtered_df.columns: filtered_df = 
 if selected_district and 'المنطقة / الحي' in filtered_df.columns: filtered_df = filtered_df[filtered_df['المنطقة / الحي'].isin(selected_district)]
 if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
-col1, col2, col3 = st.columns(1)
-col1.metric("📊 إجمالي الفنادق", len(filtered_df))
-if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: col2.metric("📍 أقرب مسافة", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-if not filtered_df.empty and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: col3.metric("🚌 فنادق توفر حافلات", len(filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']))
 
-col_table, col_map = st.columns(2)
 with col_table:
     st.subheader("📋 جدول الفنادق المتاحة وتفاصيل النقل")
     st.dataframe(filtered_df, use_container_width=True, height=400)
