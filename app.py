@@ -34,9 +34,10 @@ def get_all_makkah_hotels():
 
 
 def load_current_data():
-    if os.path.exists(excel_filename): return pd.read_excel(excel_filename)
     df_init = pd.DataFrame(get_all_makkah_hotels())
-    df_init.to_excel(excel_filename, index=False); return df_init
+    df_init.to_excel(excel_filename, index=False)
+    return df_init
+
 
 def load_comments(): return pd.read_excel(comments_filename) if os.path.exists(comments_filename) else pd.DataFrame(columns=["الوقت", "الفندق المستهدف", "التقييم", "التعليق"])
 def load_messages(): return pd.read_excel(messages_filename) if os.path.exists(messages_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "نص الرسالة"])
