@@ -269,7 +269,7 @@ if st.session_state["logged_in"]:
         st.rerun()
 else:
     admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والإعلانات:", type="password")
-    if admin_password == "1234": 
+    if admin_password == "10272356806561": 
         st.session_state["logged_in"] = True
         st.rerun()
 
