@@ -22,11 +22,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
+slider_img_paths = [f"slider_{i}.png" for i in range(1, 6)]
 
-excel_filename = "makkah_madinah_full_hotels_v16.xlsx"
-comments_filename = "visitor_comments_database_v16.xlsx"
-messages_filename = "visitor_messages_database_v16.xlsx"
-bookings_filename = "visitor_bookings_database_v16.xlsx"
+excel_filename = "makkah_madinah_full_hotels_v18.xlsx"
+comments_filename = "visitor_comments_database_v18.xlsx"
+messages_filename = "visitor_messages_database_v18.xlsx"
+bookings_filename = "visitor_bookings_database_v18.xlsx"
 
 usd_to_lyd_rate = 9.92  
 profit_margin = 200.0   
@@ -239,41 +240,42 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، إدارة الحالات، رفع صور الإعلانات، ومراجعة التقييمات والحجوزات)")
+    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، إدارة الحالات، رفع صور الإعلانات والمعرض المتحرك)")
     
-    st.markdown("### 🛠️ لوحة تحكم الأدمن: رفع وتحديث صور الإعلانات الأربعة")
+    st.markdown("### 🛠️ لوحة تحكم الأدمن: رفع وتحديث صور الإعلانات الثابتة (4 مربعات)")
     ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
     with ad_col1:
         img1 = st.file_uploader("مربع الإعلان 1", type=["png", "jpg", "jpeg"], key="ad1")
-        if img1:
-            Image.open(img1).save(ad_img_paths[0])
-            st.success("تم تحديث الإعلان 1!")
+        if img1: Image.open(img1).save(ad_img_paths[0]); st.success("تم التحديث!")
     with ad_col2:
         img2 = st.file_uploader("مربع الإعلان 2", type=["png", "jpg", "jpeg"], key="ad2")
-        if img2:
-            Image.open(img2).save(ad_img_paths[1])
-            st.success("تم تحديث الإعلان 2!")
+        if img2: Image.open(img2).save(ad_img_paths[1]); st.success("تم التحديث!")
     with ad_col3:
         img3 = st.file_uploader("مربع الإعلان 3", type=["png", "jpg", "jpeg"], key="ad3")
-        if img3:
-            Image.open(img3).save(ad_img_paths[2])
-            st.success("تم تحديث الإعلان 3!")
+        if img3: Image.open(img3).save(ad_img_paths[2]); st.success("تم التحديث!")
     with ad_col4:
         img4 = st.file_uploader("مربع الإعلان 4", type=["png", "jpg", "jpeg"], key="ad4")
-        if img4:
-            Image.open(img4).save(ad_img_paths[3])
-            st.success("تم تحديث الإعلان 4!")
-            
+        if img4: Image.open(img4).save(ad_img_paths[3]); st.success("تم التحديث!")
+
+    st.markdown("### 🏞️ لوحة تحكم الأدمن: رفع وتحديث صور المعرض المتحرك (5 صور)")
+    sl_cols = st.columns(5)
+    for idx, col in enumerate(sl_cols):
+        with col:
+            s_img = st.file_uploader(f"صورة المعرض {idx+1}", type=["png", "jpg", "jpeg"], key=f"s_up_{idx}")
+            if s_img:
+                Image.open(s_img).save(slider_img_paths[idx])
+                st.success(f"تم تحديث {idx+1}!")
+
     if st.button("🔒 تسجيل الخروج والعودة لوضع الزوار", use_container_width=True):
         st.session_state["logged_in"] = False
         st.rerun()
 else:
     admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والإعلانات:", type="password")
-    if admin_password == "10272356806561": 
+    if admin_password == "1234": 
         st.session_state["logged_in"] = True
         st.rerun()
 
-# عرض مساحات الإعلانات للجميع
+# 🏷️ عرض مساحات الإعلانات الثابتة
 st.write("### 🏷️ مساحات العروض الإعلانية:")
 p_col1, p_col2, p_col3, p_col4 = st.columns(4)
 with p_col1:
@@ -290,10 +292,32 @@ with p_col4:
     else: st.info("مربع إعلان 4 فارغ")
 
 st.markdown("---")
+
+# 🏞️ معرض الصور والمقاطع التفاعلي المتحرك
+st.write("### 🏞️ معرض صور وعروض الرحلات المميزة (التنقل بين الصور):")
+existing_slider_imgs = [p for p in slider_img_paths if os.path.exists(p)]
+
+if existing_slider_imgs:
+    if "slider_index" not in st.session_state:
+        st.session_state["slider_index"] = 0
+    
+    sl_c1, sl_c2, sl_c3 = st.columns([1, 8, 1])
+    with sl_c1:
+        if st.button("◀️ السابق", use_container_width=True):
+            st.session_state["slider_index"] = (st.session_state["slider_index"] - 1) % len(existing_slider_imgs)
+    with sl_c2:
+        st.image(existing_slider_imgs[st.session_state["slider_index"]], use_container_width=True, caption=f"عرض {st.session_state['slider_index'] + 1} من {len(existing_slider_imgs)}")
+    with sl_c3:
+        if st.button("التالي ▶️", use_container_width=True):
+            st.session_state["slider_index"] = (st.session_state["slider_index"] + 1) % len(existing_slider_imgs)
+else:
+    st.info("ℹ️ المعرض الإعلاني المتحرك فارغ حالياً (يمكن للأدمن رفع الصور من لوحة التحكم أعلاه).")
+
+st.markdown("---")
 st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (تصفح وفلترة وحجز آلي)")
 st.markdown("---")
 
-# --- 💡 مؤشرات ومميزات التميز الشاملة ---
+# --- 🏆 مؤشرات التميز ---
 st.markdown("### 🏆 لماذا يفضل الزوار تصفح خدماتنا؟")
 tr_c1, tr_c2, tr_c3, tr_c4 = st.columns(4)
 tr_c1.success("⚡ **تأكيد آلي فوري**\nحجز مباشر بنقرة زر")
@@ -303,12 +327,11 @@ tr_c4.error("📞 **دعم وتواصل**\nخدمة الزوار المباشر�
 
 st.markdown("---")
 
-# --- 🧮 التبديل المطلوب: حاسبة الوقت يساراً، ومحول العملات يميناً، وزر خرائط جوجل في مكانه الأول ---
+# --- 🧮 الترتيب الجديد والمحدد للحاسبة ومحول العملات والخرائط ---
 st.subheader("🧮 حاسبة الوقت والمسافة ومحول العملات اللحظي")
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
 with calc_c1:
-    # تم وضع حاسبة الوقت والمسافة في الجهة اليسرى (أو حسب الترتيب المطلوب)
     calc_dist = st.number_input("أدخل المسافة عن الحرم (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
     calc_mode = st.selectbox("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
     if calc_mode == "🚶 مشياً على الأقدام":
@@ -317,14 +340,12 @@ with calc_c1:
         st.success(f"⏱️ الوقت المتوقع بالحافلة: **{int(calc_dist * 4) + 5} دقيقة**")
 
 with calc_c2:
-    # زر فتح وتحديد الموقع في خرائط جوجل في مكانه الأول (الوسط)
     st.write("🗺️ **الملاحة الجغرافية السريعة:**")
     st.write("")
     maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%DAC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
     st.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
 
 with calc_c3:
-    # محول سعر الصرف في الجهة اليمنى بجانب الحاسبة
     st.write("💱 **محول سعر الصرف (د.ل / USD):**")
     usd_input = st.number_input("أدخل المبلغ بالدولار ($):", min_value=1, max_value=10000, value=100)
     converted_lyd = round(usd_input * usd_to_lyd_rate, 2)
@@ -332,17 +353,169 @@ with calc_c3:
 
 st.markdown("---")
 
-# --- 🕌 دليل مزارات المدينة المنورة ---
-st.subheader("🕌 دليل مزارات المدينة المنورة")
-mazar_c1, mazar_c2, mazar_c3, mazar_c4 = st.columns(4)
-with mazar_c1:
-    st.markdown("[🗺️ مسجد قباء - المدينة](https://www.google.com/maps/search/?api=1&query=مسجد+قباء+المدينة+المنورة)", unsafe_allow_html=True)
-with mazar_c2:
-    st.markdown("[🗺️ مقبرة شهداء جبل أحد](https://www.google.com/maps/search/?api=1&query=مقبرة+شهداء+جبل+أحد+المدينة+المنورة)", unsafe_allow_html=True)
-with mazar_c3:
-    st.markdown("[🗺️ أسواق التمور - المدينة](https://www.google.com/maps/search/?api=1&query=سوق+التمور+المركزي+المدينة+المنورة)", unsafe_allow_html=True)
-with mazar_c4:
-    st.markdown("[🗺️ زيارة الروضة الشريفة](https://www.google.com/maps/search/?api=1&query=المسجد+النبوي+الروضة+الشريفة)", unsafe_allow_html=True)
+# --- 🧳 2. جدول "استفسارات ودليل المسافر المعتمر" الشامل والمستقل ---
+st.header("🧳 جدول استفسارات ودليل المسافر المعتمر (المرجع الشامل)")
+
+guide_tabs = st.tabs([
+    "🥗 حاسبة التموين", 
+    "🧳 أوزان الأمتعة والمطار", 
+    "📋 قائمة التجهيز", 
+    "🛃 الجمارك والممنوعات", 
+    "💊 الصيدلية والطوارئ", 
+    "🚗 وسائل النقل الداخلي", 
+    "👕 الملابس والمصروف", 
+    "📱 الاتصالات والباقات", 
+    "🕋 العبادات والتحرك", 
+    "⚠️ العراقيل والمطارات", 
+    "🎁 الهدايا والتسوق"
+])
+
+# 1. حاسبة التموين
+with guide_tabs[0]:
+    st.subheader("🥗 حاسبة التموين الجاف التقديرية للرحلة")
+    t_c1, t_c2, t_c3 = st.columns(3)
+    with t_c1:
+        num_persons = st.number_input("عدد الأشخاص (المعتمرين):", min_value=1, max_value=50, value=2)
+    with t_c2:
+        madinah_days = st.number_input("الأيام في المدينة المنورة:", min_value=0, max_value=30, value=3)
+    with t_c3:
+        makkah_days = st.number_input("الأيام في مكة المكرمة:", min_value=0, max_value=30, value=11)
+    
+    total_days = madinah_days + makkah_days
+    
+    if total_days > 0:
+        pasta_kg = round(num_persons * 1.5, 2)
+        tomato_cans = num_persons * 4
+        oil_liters = num_persons * 2
+        olive_oil = round(num_persons * 0.5, 2)
+        rice_kg = num_persons * 1
+        couscous_kg = num_persons * 1
+        dried_meat_kg = num_persons * 1
+        cheese_cans = num_persons * 4
+        biscuit_kg = round(num_persons * 0.5, 2)
+        date_juice = round(num_persons * 0.5, 2)
+        spices_kg = round(num_persons * 0.5, 2)
+        zmeeta_kg = round(num_persons * 0.25, 2)
+        bseesa_kg = round(num_persons * 0.25, 2)
+        honey_kg = round(num_persons * 0.25, 2)
+        
+        st.success(f"📊 **الكمية المقترحة لمجموعة من ({num_persons}) أشخاص لمدة ({total_days}) يوماً:**")
+        
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.write(f"- 🍝 **معكرونة:** {pasta_kg} كجم")
+            st.write(f"- 🥫 **طماطم معلب:** {tomato_cans} علب")
+            st.write(f"- 🛢️ **زيت طبخ:** {oil_liters} لتر")
+            st.write(f"- 🫒 **زيت زيتون:** {olive_oil} لتر")
+            st.write(f"- 🍚 **أرز:** {rice_kg} كجم")
+            st.write(f"- 🌾 **كسكسي:** {couscous_kg} كجم")
+            st.write(f"- 🥩 **لحم مجفف (قديد):** {dried_meat_kg} كجم")
+            st.write(f"- 🧀 **جبن معلب:** {cheese_cans} علب")
+        with col_b:
+            st.write(f"- 🍪 **بسكويت:** {biscuit_kg} كجم")
+            st.write(f"- 🥤 **عصير تمر:** {date_juice} لتر")
+            st.write(f"- 🧂 **بهارات مشكلة:** {spices_kg} كجم")
+            st.write(f"- 🥣 **زميطة:** {zmeeta_kg} كجم")
+            st.write(f"- 🌾 **بسيسة:** {bseesa_kg} كجم")
+            st.write(f"- 🍯 **عسل طبيعي:** {honey_kg} كجم")
+            st.write(f"- 🍳 **أواني ومعدات:** عدد 2 معلاق + فرنيلو للطبخ")
+            if num_persons <= 2:
+                st.write("- 🍲 **طنجرة طهي:** طنجرة صغيرة تناسب شخصين")
+            else:
+                st.write(f"- 🍲 **طنجرة طهي:** طنجرة نصف كيلو أو أكبر يتكفل بها أحد الأشخاص كلما زاد العدد")
+
+        st.warning("💡 **ملاحظة مهمة جداً:** لا ينصح بنقل الحليب والعصائر من ليبيا لتوفرها في الأراضي السعودية بجودة عالية وأسعار مناسبة جداً.")
+
+# 2. أوزان الأمتعة والمطار
+with guide_tabs[1]:
+    st.subheader("🧳 حاسبة أوزان الأمتعة والمطار")
+    w_persons = st.number_input("أدخل عدد أفراد الرحلة لحساب الوزن المسموح:", min_value=1, max_value=30, value=2, key="luggage_p")
+    total_allowed_luggage = w_persons * 30
+    total_allowed_hand = w_persons * 7
+    st.info(f"📦 **إجمالي الوزن المسموح به لـ ({w_persons}) أشخاص:**\n- **الحقائب المشحونة (Cargo):** {total_allowed_luggage} كجم (30 كجم للشخص).\n- **حقائب اليد (Cabin):** {total_allowed_hand} كجم (7 كجم للشخص).")
+    st.write("💡 **نصيحة ذهبية:** وزع التموين الجاف في الحقائب الكبيرة بالتساوي، واترك مساحة جيدة في حقائب العودة لشراء التمور الهدايا.")
+
+# 3. قائمة التجهيز
+with guide_tabs[2]:
+    st.subheader("📋 قائمة التجهيز الإلزامية للمعتمر")
+    st.checkbox("جواز السفر ساري المفعول لمدة لا تقل عن 6 أشهر")
+    st.checkbox("تذاكر الطيران وتأكيد حجز الفندق ورسائل الواتساب الرسمية")
+    st.checkbox("أوراق الثبوتية والبطاقة الشخصية")
+    st.checkbox("ملابس الإحرام (للرجال) وملابس فضفاضة مريحة (للنساء)")
+    st.checkbox("حذاء رياضي خفيف ومريح للمشي لمسافات طويلة")
+    st.checkbox("محول كهربائي عالمي ومظلة شمسية واقية")
+
+# 4. الجمارك والممنوعات
+with guide_tabs[3]:
+    st.subheader("🛃 دليل الإجراءات الجمركية وممنوعات المطارات")
+    st.write("""
+    - 🚫 **المحظورات في حقائب اليد:** السوائل التي تزيد عن 100 مل، المواد القابلة للاشتعال (مثل الولاعات والغازات)، والآلات الحادة (المقصات والسكاكين).
+    - 🥩 **الأغذية المسموحة:** يُسمح بالتموين الجاف (المعكرونة، الحبوب، البهارات، اللحم المجفف المحكم الغلق)، ويُمنع شحن الأطعمة السائلة أو الطازجة المفتوحة.
+    - 💰 **المبالغ النقدية:** يجب الإقرار عن أي مبالغ نقدية تتجاوز 60,000 ريال سعودي (أو ما يعادلها) عند الدخول أو الخروج.
+    """)
+
+# 5. الصيدلية والطوارئ
+with guide_tabs[4]:
+    st.subheader("💊 الصيدلية المصغرة وحالات الطوارئ الطبية")
+    st.write("""
+    - 🩺 **الأدوية الشخصية:** يجب إحضار الأدوية الخاصة بالأمراض المزمنة (الضغط، السكري، القلب) بكميات تكفي طوال فترة الرحلة مع وصفة الطبيب.
+    - 🩹 **حقيبة الإسعافات الأولية الخفيفة:** مسكنات الألم (باراسيتامول)، مضادات التقلصات، أدوية نزلات البرد وتغيير الجو، كريمات الحروق والتسلخات الناتجة عن المشي والحرارة.
+    - 🏥 **الرعاية الصحية:** تقدم المملكة العربية السعودية خدمات صحية وطارئة ممتازة لضيوف الرحمن مجاناً أو بأسعار رمزية في مستشفيات مكة والمدينة.
+    """)
+
+# 6. وسائل النقل الداخلي
+with guide_tabs[5]:
+    st.subheader("🚗 دليل وسائل النقل الداخلي في السعودية")
+    st.write("""
+    - 🚆 **قطار الحرمين السريع:** الوسيلة الأسرع والأروع للتنقل بين مكة المكرمة والمدينة المنورة (يستغرق الرحلة حوالي ساعتين ونصف فقط).
+    - 🚌 **الحافلات الترددية:** متوفرة لنقل المعتمرين من الفنادق البعيدة إلى الحرم والعكس.
+    - 📱 **تطبيقات التوصيل الذكية:** تطبيقات مثل (Uber، Careem، Bolt، وتاكسي توصيل مكة والمدينة) متوفرة بكثرة وبأسعار آمنة ومعروفة.
+    """)
+
+# 7. الملابس والمصروف
+with guide_tabs[6]:
+    st.subheader("👕 دليل الملابس والمصروف الشخصي")
+    st.write("""
+    - 🥋 **الملابس:** يُفضل الملابس القطنية الخفيفة البيضاء أو الفاتحة للرجال أثناء الإحرام، والملابس الفضفاضة المريحة للنساء. احرص على حذاء مريح جداً للمشي لمسافات طويلة.
+    - 💵 **المصروف التقديري:** متوسط المصروف الشخصي اليومي للمعتمر (بعيداً عن السكن والطيران) يتراوح بين **70 إلى 150 ريال سعودي يومياً** للشخص (للوجبات الخفيفة، الهدايا البسيطة، والتنقلات الجانبية).
+    """)
+
+# 8. شبكات الاتصال
+with guide_tabs[7]:
+    st.subheader("📱 أفضل شركات الاتصال والباقات السعودية")
+    st.write("""
+    1. 📶 **شركة STC (الاتصالات السعودية):** الأقوى والأفضل تغطية داخل الحرم وفي ساحات مكة والمدينة وفي قطار الحرمين.
+    2. 📶 **شركة Mobily (موبايلي):** ممتازة جداً وتوفر باقات إنترنت واسعة ومناسبة للمعتمرين.
+    3. 📶 **شركة Zain (زين):** تقدم عروضاً اقتصادية ممتازة لباقات البيانات والاتصالات الدولية.
+    💡 **نصيحة:** يمكنك استخراج الشريحة فور الوصول إلى مطار جدة أو مطار المدينة باستخدام جواز السفر والبصمة.
+    """)
+
+# 9. العبادات والجدول
+with guide_tabs[8]:
+    st.subheader("🕋 دليل العبادات وجدول التحرك اليومي (عادي / رمضان)")
+    st.write("""
+    - 🕒 **في الأيام العادية:** يُفضل الذهاب للحرم قبل الأذان بـ 30 دقيقة على الأقل لضمان مكان مناسب.
+    - 🌙 **في شهر رمضان المبارك:** يشتد الازدحام جداً؛ يُفضل الذهاب لصلاة العصر والمكوث في الحرم حتى صلاة التراويح والافطار هناك، أو الخروج فور انتهاء الصلاة مباشرة لتجنب التدافع عند الأبواب.
+    - 🚶‍♂️ **أفضل أوقات الطواف وسعي العمرة:** في الصباح الباكر (بعد صلاة الفجر مباشرة) أو في وقت متأخر من الليل (بعد الساعة 1:00 صباحاً).
+    """)
+
+# 10. العراقيل وتوضيح شركات الطيران
+with guide_tabs[9]:
+    st.subheader("⚠️ تنبيهات مهمة حول العراقيل المتوقعة في السفر")
+    st.write("""
+    نحرص دائماً في **شركة طريق الميقات** على تقديم أفضل خدمة وتوضيح كافة الأمور شفافة لعملائنا الكرام:
+    - ✈️ **تأخير مواعيد الرحلات:** قد يحدث أحياناً تعديل أو تأخير في مواعيد الطيران من قبل شركات الطيران نفسها (الخطوط الأفريقية، الليبية، إلخ) لظروف التشغيل أو الملاحة الجوية دون إخطار مسبق للوكالة، وهذا أمر خارج عن إرادة شركة السفر والسياحة.
+    - 🧳 **تأخر الأمتعة في المطار:** في حالات الترانزيت أو الازدحام، يُنصح دائماً بكتابة اسمك ورقم هاتفك بوضوح على جميع الحقائب، والاحتفاظ بالملابس الأساسية وأدوات الإحرام في حقيبة اليد.
+    """)
+
+# 11. الهدايا والتسوق
+with guide_tabs[10]:
+    st.subheader("🎁 دليل شراء الهدايا وأفضل الأسواق في مكة والمدينة")
+    st.write("""
+    - 🌴 **التمور الفاخرة (المدينة):** أفضل الأماكن هو **سوق التمور المركزي بالمدينة المنورة** (أنواع العجوة، الصفاوي، والسكري).
+    - 👗 **الأقمشة والملابس (مكة):** سوق العتيبية في مكة المكرمة، وأسواق الكعكية، وأسواق العزيزية لشراء الأقمشة والهدايا بالجملة وبأسعار مناسبة.
+    - 🎁 **الهدايا العامة (سبح، مصاحف، سجّاد):** المحلات المجاورة لساحات الحرم توفر تشكيلات متنوعة حسب الجنس والعمر.
+    """)
 
 st.markdown("---")
 
@@ -368,7 +541,6 @@ if selected_district and 'المنطقة / الحي' in filtered_df.columns:
 if shuttle_only and 'توفر حافلة نقل (Shuttle)' in filtered_df.columns: 
     filtered_df = filtered_df[filtered_df['توفر حافلة نقل (Shuttle)'] == 'نعم']
 
-# إخفاء عمود المعادل بالسوق الموازي عن الزوار
 display_df = filtered_df.copy()
 if not st.session_state["logged_in"]:
     if "المعادل بالسوق الموازي (د.ل)" in display_df.columns:
