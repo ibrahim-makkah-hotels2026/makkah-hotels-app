@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import time
 import urllib.parse
+import json
 from PIL import Image
 
 # 🕋 إعداد واجهة الصفحة
@@ -11,14 +12,16 @@ st.set_page_config(page_title="دليل المعتمر الشامل - نظام �
 # 🔒 جدار الأمان الذكي والحماية القوية
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: hidden !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-excel_filename = "makkah_madinah_full_hotels_v27.xlsx"
-comments_filename = "visitor_comments_database_v27.xlsx"
-bookings_filename = "visitor_bookings_database_v27.xlsx"
-suggestions_filename = "visitor_suggestions_database_v27.xlsx"
-subscribers_filename = "subscribers_database_v27.xlsx"
-admin_messages_filename = "admin_messages_database_v27.xlsx"
-stats_filename = "visitor_stats_v27.txt"
-notice_filename = "admin_notice_v27.txt"
+excel_filename = "makkah_madinah_full_hotels_v28.xlsx"
+comments_filename = "visitor_comments_database_v28.xlsx"
+bookings_filename = "visitor_bookings_database_v28.xlsx"
+suggestions_filename = "visitor_suggestions_database_v28.xlsx"
+subscribers_filename = "subscribers_database_v28.xlsx"
+admin_messages_filename = "admin_messages_database_v28.xlsx"
+stats_filename = "visitor_stats_v28.txt"
+notice_filename = "admin_notice_v28.txt"
+admin_ads_filename = "admin_ads_images_v28.json"
+admin_comp_filename = "admin_comp_media_v28.json"
 
 # عداد الزوار الحقيقي للأدمن
 def track_visitor():
@@ -52,6 +55,19 @@ def save_admin_notice(text):
 
 def load_admin_messages():
     return pd.read_excel(admin_messages_filename) if os.path.exists(admin_messages_filename) else pd.DataFrame(columns=["الوقت", "البريد / الاسم", "نص الرسالة"])
+
+def load_json_list(filename):
+    if os.path.exists(filename):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return []
+
+def save_json_list(filename, data_list):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data_list, f, ensure_ascii=False)
 
 # 📢 شريط الإعلان والتذكير العاجل
 st.markdown("""
@@ -276,7 +292,7 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط (صلاحيات كاملة للتحكم في الأسعار، ومراجعة مقترحات الزوار ورسائل الإدارة)")
+    st.success("✓ وضع المدير نشط (صلاحيات كاملة للتحكم في الإعلانات، الأسعار، ومراجعة المقترحات والرسائل)")
     
     st.markdown(f"📊 **إحصائيات الزيارات الحقيقية للموقع:** {real_visits} زيارة")
 
@@ -285,6 +301,48 @@ if st.session_state["logged_in"]:
     if st.button("حفظ التذكير"):
         save_admin_notice(new_notice_input)
         st.success("تم التحديث!")
+        st.rerun()
+
+    # 1. إدارة المساحة الإعلانية الأولى (4 مربعات)
+    st.markdown("### 🖼️ إدارة المساحة الإعلانية الأولى (4 مربعات):")
+    up_ad = st.file_uploader("رفع صورة للمساحة الإعلانية الأولى:", type=["png", "jpg", "jpeg"], key="up_ad_box")
+    if up_ad:
+        os.makedirs("admin_uploads", exist_ok=True)
+        p_ad = os.path.join("admin_uploads", up_ad.name)
+        with open(p_ad, "wb") as f:
+            f.write(up_ad.getbuffer())
+        ads_list = load_json_list(admin_ads_filename)
+        ads_list.append(p_ad)
+        save_json_list(admin_ads_filename, ads_list)
+        st.success("✓ تمت إضافة الصورة للمساحة الإعلانية الأولى!")
+        st.rerun()
+    
+    ads_list_current = load_json_list(admin_ads_filename)
+    if ads_list_current and st.button("🗑️ حذف آخر صورة من المساحة الإعلانية الأولى"):
+        ads_list_current.pop()
+        save_json_list(admin_ads_filename, ads_list_current)
+        st.success("تم الحذف!")
+        st.rerun()
+
+    # 2. إدارة قسم عروض تنافسية (صور أو فيديوهات)
+    st.markdown("### 🎬 إدارة قسم (عروض تنافسية 🔥):")
+    up_comp = st.file_uploader("رفع صورة أو مقطع فيديو لعروض تنافسية:", type=["png", "jpg", "jpeg", "mp4"], key="up_comp_box")
+    if up_comp:
+        os.makedirs("admin_uploads", exist_ok=True)
+        p_comp = os.path.join("admin_uploads", up_comp.name)
+        with open(p_comp, "wb") as f:
+            f.write(up_comp.getbuffer())
+        comp_list = load_json_list(admin_comp_filename)
+        comp_list.append(p_comp)
+        save_json_list(admin_comp_filename, comp_list)
+        st.success("✓ تمت الإضافة إلى عروض تنافسية بنجاح!")
+        st.rerun()
+
+    comp_list_current = load_json_list(admin_comp_filename)
+    if comp_list_current and st.button("🗑️ حذف آخر عنصر من عروض تنافسية"):
+        comp_list_current.pop()
+        save_json_list(admin_comp_filename, comp_list_current)
+        st.success("تم الحذف!")
         st.rerun()
 
     if st.button("🔒 تسجيل الخروج", use_container_width=True):
@@ -298,17 +356,23 @@ else:
 
 st.markdown("---")
 
-# العداد التحفيزي للزوار
-if "visitor_count_display" not in st.session_state:
-    st.session_state["visitor_count_display"] = 1000
-    st.session_state["last_update_time"] = time.time()
+# --- 👥 عداد الزوار الذكي (مخفي للأدمن ويظهر للزوار بزيادة تصاعدية مستمرة) ---
+if not st.session_state["logged_in"]:
+    import random
+    if "fake_visitor_count" not in st.session_state:
+        st.session_state["fake_visitor_count"] = 1240
+        st.session_state["last_increment_time"] = time.time()
+    
+    # زيادة مستمرة كل دقيقتين بقيم عشوائية (+3, +10, +5, +2, +20)
+    current_time_val = time.time()
+    if current_time_val - st.session_state["last_increment_time"] > 120:
+        increment_steps = [3, 10, 5, 2, 20]
+        st.session_state["fake_visitor_count"] += random.choice(increment_steps)
+        st.session_state["last_increment_time"] = current_time_val
 
-current_t_val = time.time()
-if current_t_val - st.session_state["last_update_time"] > 120: 
-    st.session_state["visitor_count_display"] += 100
-    st.session_state["last_update_time"] = current_t_val
-
-st.info(f"👥 إجمالي عدد زيارات الموقع حتى الآن: **{st.session_state['visitor_count_display']}**")
+    st.info(f"👥 إجمالي عدد زيارات الموقع حتى الآن: **{st.session_state['fake_visitor_count']}**")
+else:
+    st.info(f"📊 [لوحة الأدمن] إجمالي الزيارات الحقيقية للموقع: **{real_visits}** زيارة")
 
 # التسجيل بالبريد الإلكتروني فقط
 with st.expander("🔔 التسجيل في الموقع لتلقي التنبيهات والتحديثات الفورية"):
@@ -323,6 +387,73 @@ with st.expander("🔔 التسجيل في الموقع لتلقي التنبي�
                 st.success("🎉 تم تسجيل بريدك بنجاح لتلقي التنبيهات!")
             else:
                 st.error("⚠️ يرجى إدخال بريد إلكتروني صحيح.")
+
+st.markdown("---")
+
+# --- 📌 المساحة الإعلانية الأولى (4 مربعات للصور المحملة من الأدمن فقط) ---
+st.subheader("📌 مساحات العروض الإعلانية:")
+ads_images = load_json_list(admin_ads_filename)
+
+ad_c1, ad_c2 = st.columns(2)
+with ad_c1:
+    if len(ads_images) > 0 and os.path.exists(ads_images[0]):
+        st.image(ads_images[0], use_column_width=True)
+    else:
+        st.info("📌 مربع إعلاني (1) - بانتظار رفع الصورة من الأدمن")
+with ad_c2:
+    if len(ads_images) > 1 and os.path.exists(ads_images[1]):
+        st.image(ads_images[1], use_column_width=True)
+    else:
+        st.info("📌 مربع إعلاني (2) - بانتظار رفع الصورة من الأدمن")
+
+ad_c3, ad_c4 = st.columns(2)
+with ad_c3:
+    if len(ads_images) > 2 and os.path.exists(ads_images[2]):
+        st.image(ads_images[2], use_column_width=True)
+    else:
+        st.info("📌 مربع إعلاني (3) - بانتظار رفع الصورة من الأدمن")
+with ad_c4:
+    if len(ads_images) > 3 and os.path.exists(ads_images[3]):
+        st.image(ads_images[3], use_column_width=True)
+    else:
+        st.info("📌 مربع إعلاني (4) - بانتظار رفع الصورة من الأدمن")
+
+st.markdown("---")
+
+# --- 🔥 عروض تنافسية (شاشة لصورة واحدة أو فيديو مع التنقل < 🏞️ >) ---
+st.subheader("🔥 عروض تنافسية")
+
+comp_media = load_json_list(admin_comp_filename)
+
+if "comp_index" not in st.session_state:
+    st.session_state["comp_index"] = 0
+
+if comp_media and len(comp_media) > 0:
+    if st.session_state["comp_index"] >= len(comp_media):
+        st.session_state["comp_index"] = 0
+        
+    nav_b1, nav_b2, nav_b3 = st.columns([1, 2, 1])
+    with nav_b1:
+        if st.button("◀ السابق", key="c_prev", use_container_width=True):
+            st.session_state["comp_index"] = (st.session_state["comp_index"] - 1) % len(comp_media)
+            st.rerun()
+
+    with nav_b2:
+        st.markdown(f"<div style='text-align: center; font-weight: bold; padding: 5px;'>🏞️ عرض العنصر ({st.session_state['comp_index'] + 1} من {len(comp_media)})</div>", unsafe_allow_html=True)
+
+    with nav_b3:
+        if st.button("التالي ▶", key="c_next", use_container_width=True):
+            st.session_state["comp_index"] = (st.session_state["comp_index"] + 1) % len(comp_media)
+            st.rerun()
+
+    current_item = comp_media[st.session_state["comp_index"]]
+    if os.path.exists(current_item):
+        if current_item.lower().endswith(('.mp4', '.mov', '.avi')):
+            st.video(current_item)
+        else:
+            st.image(current_item, caption=f"عرض تنافسي رقم {st.session_state['comp_index'] + 1}", use_column_width=True)
+else:
+    st.info("💡 قسم (عروض تنافسية 🔥): بانتظار قيام الأدمن برفع الصور أو الفيديوهات من لوحة التحكم.")
 
 st.markdown("---")
 
@@ -443,7 +574,7 @@ with guide_tabs[5]:
 with guide_tabs[6]:
     st.subheader("🕋 كيفية أداء العمرة")
     st.markdown("[🎥 مشاهدة فيديو شرح مناسك العمرة خطوة بخطوة](https://www.youtube.com/watch?v=6u-Xj1s3vEg)")
-    st.markdown("[📖 مقال مناسك العمرة الشامل (زاد العمرة)](https://zadumrah.com/blog/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%8لل%D8%B9%D9%85%D8%B1%D8%A9-%D9%83%D8%A7%D9%85%D9%84%D8%A9)")
+    st.markdown("[📖 مقال مناسك العمرة الشامل (زاد العمرة)](https://zadumrah.com/blog/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%8لل%D8%B9%D9%85%D8%B1%D8%A9-%D9%83%D8%A7%D9%85%D9%84%D8%Aعة)")
 
 with guide_tabs[7]:
     st.subheader("🍽️ مطاعم المدينة المنورة")
@@ -473,7 +604,7 @@ st.markdown("---")
 
 # --- 💡 خانة المقترحات مع إرفاق صورة ---
 st.subheader("💡 شاركنا برأيك ومقترحاتك (مع إمكانية إرفاق صورة توضيحية)")
-with st.form("suggestion_form_v27"):
+with st.form("suggestion_form_v28"):
     s_name = st.text_input("✍️ اسم المقترح / الزائر:")
     s_type = st.selectbox("📌 نوع المقترح:", ["تعديل على الخدمات", "إضافة ميزة جديدة", "رأي أو ملاحظة عامة", "أخرى"])
     s_details = st.text_area("💬 التفاصيل والتعديلات المناسبة:")
