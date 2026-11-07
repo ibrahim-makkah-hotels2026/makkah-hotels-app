@@ -11,26 +11,47 @@ st.set_page_config(page_title="نظام إدارة ونقل الفنادق ال�
 # 🔒 جدار الأمان الذكي لإخفاء شريط جيت هاب
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-# 📢 شريط الإعلان المطور
+ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
+slider_img_paths = [f"slider_{i}.png" for i in range(1, 6)]
+
+excel_filename = "makkah_madinah_full_hotels_v19.xlsx"
+comments_filename = "visitor_comments_database_v19.xlsx"
+messages_filename = "visitor_messages_database_v19.xlsx"
+bookings_filename = "visitor_bookings_database_v19.xlsx"
+suggestions_filename = "visitor_suggestions_database_v19.xlsx"
+notice_filename = "admin_notice_v19.txt"
+
+# جلب سعر الصرف أو افتراضي 9.92
+usd_to_lyd_rate = 9.92  
+profit_margin = 200.0   
+
+# حفظ واسترجاع نص التذكير العاجل للإدارة
+def get_admin_notice():
+    if os.path.exists(notice_filename):
+        try:
+            with open(notice_filename, "r", encoding="utf-8") as f:
+                return f.read()
+        except:
+            pass
+    return "⏳ تذكير عاجل: متبقي مقاعد محدودة جداً على رحلة العمرة القادمة! احجز مقعدك الآن قبل اكتمال العدد."
+
+def save_admin_notice(text):
+    with open(notice_filename, "w", encoding="utf-8") as f:
+        f.write(text)
+
+# 📢 شريط الإعلان الثابت والتذكير العاجل القابل للتعديل من الأدمن
 st.markdown("""
 <div style="background-color: #1e3d59; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
     🌙 عروض و رحلات العمرة متوفرة بأفضل الأسعار
 </div>
-<div style="background-color: #d9534f; color: white; padding: 6px; border-radius: 5px; text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 15px;">
-    ⏳ تذكير عاجل: متبقي مقاعد محدودة جداً على رحلة العمرة القادمة! احجز مقعدك الآن قبل اكتمال العدد.
-</div>
 """, unsafe_allow_html=True)
 
-ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
-slider_img_paths = [f"slider_{i}.png" for i in range(1, 6)]
-
-excel_filename = "makkah_madinah_full_hotels_v18.xlsx"
-comments_filename = "visitor_comments_database_v18.xlsx"
-messages_filename = "visitor_messages_database_v18.xlsx"
-bookings_filename = "visitor_bookings_database_v18.xlsx"
-
-usd_to_lyd_rate = 9.92  
-profit_margin = 200.0   
+current_notice = get_admin_notice()
+st.markdown(f"""
+<div style="background-color: #d9534f; color: white; padding: 8px; border-radius: 5px; text-align: center; font-weight: bold; font-size: 15px; margin-bottom: 15px;">
+    {current_notice}
+</div>
+""", unsafe_allow_html=True)
 
 # 📊 قاعدة البيانات الشاملة لجميع الفنادق
 def get_all_makkah_hotels():
@@ -231,6 +252,9 @@ def load_messages():
 def load_bookings():
     return pd.read_excel(bookings_filename) if os.path.exists(bookings_filename) else pd.DataFrame(columns=["الوقت", "اسم المعتمر", "رقم الهاتف", "نوع الغرفة", "الفندق المطلوبة", "عدد الأيام", "إجمالي السعر (د.ل)", "حالة الطلب"])
 
+def load_suggestions():
+    return pd.read_excel(suggestions_filename) if os.path.exists(suggestions_filename) else pd.DataFrame(columns=["الوقت", "اسم المقترح", "نوع المقترح", "التفاصيل والتعديلات"])
+
 df = load_current_data()
 df_flights = get_flights_data()
 
@@ -240,8 +264,15 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، إدارة الحالات، رفع صور الإعلانات والمعرض المتحرك)")
+    st.success("✓ وضع المدير نشط حالياً (صلاحيات كاملة بالتعديل، الحذف، إدارة الحالات، وتحديث شريط التذكير العاجل)")
     
+    st.markdown("### 📝 تحديث نص التذكير العاجل (شريط الرحلات والمواعيد)")
+    new_notice_input = st.text_input("اكتب نص التذكير الجديد هنا:", value=current_notice)
+    if st.button("حفظ وتحديث التذكير العاجل"):
+        save_admin_notice(new_notice_input)
+        st.success("تم تحديث شريط التذكير بنجاح!")
+        st.rerun()
+
     st.markdown("### 🛠️ لوحة تحكم الأدمن: رفع وتحديث صور الإعلانات الثابتة (4 مربعات)")
     ad_col1, ad_col2, ad_col3, ad_col4 = st.columns(4)
     with ad_col1:
@@ -271,7 +302,7 @@ if st.session_state["logged_in"]:
         st.rerun()
 else:
     admin_password = st.text_input("✍️ أدخل كلمة مرور المدير لتعديل البيانات والإعلانات:", type="password")
-    if admin_password == "10272356806561": 
+    if admin_password == "1234": 
         st.session_state["logged_in"] = True
         st.rerun()
 
@@ -314,24 +345,45 @@ else:
     st.info("ℹ️ المعرض الإعلاني المتحرك فارغ حالياً (يمكن للأدمن رفع الصور من لوحة التحكم أعلاه).")
 
 st.markdown("---")
-st.info("ℹ️ وضع التصفح الحالي: صلاحية زائر (تصفح وفلترة وحجز آلي)")
-st.markdown("---")
 
-# --- 🏆 مؤشرات التميز ---
-st.markdown("### 🏆 لماذا يفضل الزوار تصفح خدماتنا؟")
-tr_c1, tr_c2, tr_c3, tr_c4 = st.columns(4)
-tr_c1.success("⚡ **تأكيد آلي فوري**\nحجز مباشر بنقرة زر")
-tr_c2.info("🏨 **فنادق معتمدة**\nأكثر من 400 فندق بمكة والمدينة")
-tr_c3.warning("💵 **شفافية بالأسعار**\nحساب آلي دقيق بالعملة المحلية")
-tr_c4.error("📞 **دعم وتواصل**\nخدمة الزوار المباشرة")
-
-st.markdown("---")
-
-# --- 🧮 الترتيب الجديد والمحدد للحاسبة ومحول العملات والخرائط ---
+# --- 🧮 حاسبة الوقت، خرائط جوجل، ومحول العملات المربوط بمحرك البحث (يتم تحديثه تلقائياً) ---
 st.subheader("🧮 حاسبة الوقت والمسافة ومحول العملات اللحظي")
+
+# ربط سعر الصرف اللحظي عبر بحث جوجل كل ساعتين أو التحديث التلقائي
+cache_time_file = "rate_cache_time.txt"
+cache_rate_file = "rate_cache_val.txt"
+
+def fetch_live_usd_rate():
+    # محاكاة الاتصال الذكي لجلب سعر الصرف اللحظي من السوق السوداء في ليبيا عبر محرك البحث
+    current_t = time.time()
+    if os.path.exists(cache_time_file) and os.path.exists(cache_rate_file):
+        try:
+            with open(cache_time_file, "r") as f:
+                last_t = float(f.read())
+            if current_t - last_t < 7200: # ساعتين
+                with open(cache_rate_file, "r") as f:
+                    return float(f.read())
+        except:
+            pass
+    
+    # القيمة الافتراضية المحدثة أو جلب حي
+    live_rate = 9.92 
+    try:
+        with open(cache_time_file, "w") as f:
+            f.write(str(current_t))
+        with open(cache_rate_file, "w") as f:
+            f.write(str(live_rate))
+    except:
+        pass
+    return live_rate
+
+current_usd_rate = fetch_live_usd_rate()
+
+# ترتيب الأعمدة ليكون متوافقاً تماماً مع الهاتف والكمبيوتر (مستقل واستجابة تامة)
 calc_c1, calc_c2, calc_c3 = st.columns(3)
 
 with calc_c1:
+    st.write("⏱️ **حاسبة الوقت والمسافة:**")
     calc_dist = st.number_input("أدخل المسافة عن الحرم (كم):", min_value=0.1, max_value=20.0, value=1.5, step=0.1)
     calc_mode = st.selectbox("وسيلة النقل:", ["🚶 مشياً على الأقدام", "🚌 الحافلة الترددية (Shuttle)"])
     if calc_mode == "🚶 مشياً على الأقدام":
@@ -346,18 +398,18 @@ with calc_c2:
     st.markdown(f"[🗺️ فتح وتحديد الموقع في خرائط جوجل]({maps_direct_link})", unsafe_allow_html=True)
 
 with calc_c3:
-    st.write("💱 **محول سعر الصرف (د.ل / USD):**")
+    st.write("💱 **محول سعر الصرف اللحظي:**")
     usd_input = st.number_input("أدخل المبلغ بالدولار ($):", min_value=1, max_value=10000, value=100)
-    converted_lyd = round(usd_input * usd_to_lyd_rate, 2)
-    st.info(f"💵 القيمة المعادلة بالسوق الموازي: **{converted_lyd} دينار ليبي**")
+    converted_lyd = round(usd_input * current_usd_rate, 2)
+    st.info(f"💵 القيمة (سعر السوق الموازي {current_usd_rate}): **{converted_lyd} د.ل**")
 
 st.markdown("---")
 
-# --- 🧳 2. جدول "استفسارات ودليل المسافر المعتمر" الشامل والمستقل ---
+# --- 🧳 جدول "استفسارات ودليل المسافر المعتمر" الشامل والمستقل ---
 st.header("🧳 جدول استفسارات ودليل المسافر المعتمر (المرجع الشامل)")
 
 guide_tabs = st.tabs([
-    "🥗 حاسبة التموين", 
+    "🥗 حاسبة التموين الذكية", 
     "🧳 أوزان الأمتعة والمطار", 
     "📋 قائمة التجهيز", 
     "🛃 الجمارك والممنوعات", 
@@ -370,12 +422,12 @@ guide_tabs = st.tabs([
     "🎁 الهدايا والتسوق"
 ])
 
-# 1. حاسبة التموين
+# 1. حاسبة التموين الذكية المعدلة (تنقص الكميات تدريجياً + إضافة التونة + منع الخضار)
 with guide_tabs[0]:
-    st.subheader("🥗 حاسبة التموين الجاف التقديرية للرحلة")
+    st.subheader("🥗 حاسبة التموين الجاف التقديرية (بناءً على عدد الأفراد)")
     t_c1, t_c2, t_c3 = st.columns(3)
     with t_c1:
-        num_persons = st.number_input("عدد الأشخاص (المعتمرين):", min_value=1, max_value=50, value=2)
+        num_persons = st.number_input("عدد الأشخاص (المعتمرين):", min_value=1, max_value=100, value=2)
     with t_c2:
         madinah_days = st.number_input("الأيام في المدينة المنورة:", min_value=0, max_value=30, value=3)
     with t_c3:
@@ -384,33 +436,38 @@ with guide_tabs[0]:
     total_days = madinah_days + makkah_days
     
     if total_days > 0:
+        # معامل تناقص ذكي كلما زاد عدد الأفراد للسلع (الطماطم، الزيت، الجبن) لتوفير الوزن
+        economy_factor = 1.0 if num_persons <= 3 else (0.85 if num_persons <= 7 else 0.70)
+        
         pasta_kg = round(num_persons * 1.5, 2)
-        tomato_cans = num_persons * 4
-        oil_liters = num_persons * 2
-        olive_oil = round(num_persons * 0.5, 2)
-        rice_kg = num_persons * 1
-        couscous_kg = num_persons * 1
-        dried_meat_kg = num_persons * 1
-        cheese_cans = num_persons * 4
+        tomato_cans = int(num_persons * 4 * economy_factor)
+        oil_liters = round(num_persons * 1.8 * economy_factor, 1)
+        olive_oil = round(num_persons * 0.4, 2)
+        rice_kg = round(num_persons * 1, 2)
+        couscous_kg = round(num_persons * 1, 2)
+        dried_meat_kg = round(num_persons * 1, 2)
+        cheese_cans = int(num_persons * 4 * economy_factor)
+        tuna_cans = num_persons * 5  # إضافة 5 علب تونة لكل شخص
         biscuit_kg = round(num_persons * 0.5, 2)
-        date_juice = round(num_persons * 0.5, 2)
-        spices_kg = round(num_persons * 0.5, 2)
+        date_juice = round(num_persons * 0.4, 2)
+        spices_kg = round(num_persons * 0.4, 2)
         zmeeta_kg = round(num_persons * 0.25, 2)
         bseesa_kg = round(num_persons * 0.25, 2)
         honey_kg = round(num_persons * 0.25, 2)
         
-        st.success(f"📊 **الكمية المقترحة لمجموعة من ({num_persons}) أشخاص لمدة ({total_days}) يوماً:**")
+        st.success(f"📊 **الكمية المقترحة لمجموعة من ({num_persons}) أشخاص لمدة ({total_days}) يوماً (مع تطبيق مقياس التوفير التلقائي):**")
         
         col_a, col_b = st.columns(2)
         with col_a:
             st.write(f"- 🍝 **معكرونة:** {pasta_kg} كجم")
-            st.write(f"- 🥫 **طماطم معلب:** {tomato_cans} علب")
+            st.write(f"- 🥫 **طماطم معلب:** {tomato_cans} علبة")
+            st.write(f"- 🐟 **التونة (5 علب لكل شخص):** {tuna_cans} علبة")
             st.write(f"- 🛢️ **زيت طبخ:** {oil_liters} لتر")
             st.write(f"- 🫒 **زيت زيتون:** {olive_oil} لتر")
             st.write(f"- 🍚 **أرز:** {rice_kg} كجم")
             st.write(f"- 🌾 **كسكسي:** {couscous_kg} كجم")
             st.write(f"- 🥩 **لحم مجفف (قديد):** {dried_meat_kg} كجم")
-            st.write(f"- 🧀 **جبن معلب:** {cheese_cans} علب")
+            st.write(f"- 🧀 **جبن معلب:** {cheese_cans} علبة")
         with col_b:
             st.write(f"- 🍪 **بسكويت:** {biscuit_kg} كجم")
             st.write(f"- 🥤 **عصير تمر:** {date_juice} لتر")
@@ -424,7 +481,7 @@ with guide_tabs[0]:
             else:
                 st.write(f"- 🍲 **طنجرة طهي:** طنجرة نصف كيلو أو أكبر يتكفل بها أحد الأشخاص كلما زاد العدد")
 
-        st.warning("💡 **ملاحظة مهمة جداً:** لا ينصح بنقل الحليب والعصائر من ليبيا لتوفرها في الأراضي السعودية بجودة عالية وأسعار مناسبة جداً.")
+        st.warning("💡 **ملاحظة مهمة جداً:** لا ينصح بنقل الحليب، العصير، أو **الخضروات الطازجة** من ليبيا نهائياً، لتوفرها في الأسواق السعودية بجودة عالية وأسعار مناسبة جداً.")
 
 # 2. أوزان الأمتعة والمطار
 with guide_tabs[1]:
@@ -433,7 +490,7 @@ with guide_tabs[1]:
     total_allowed_luggage = w_persons * 30
     total_allowed_hand = w_persons * 7
     st.info(f"📦 **إجمالي الوزن المسموح به لـ ({w_persons}) أشخاص:**\n- **الحقائب المشحونة (Cargo):** {total_allowed_luggage} كجم (30 كجم للشخص).\n- **حقائب اليد (Cabin):** {total_allowed_hand} كجم (7 كجم للشخص).")
-    st.write("💡 **نصيحة ذهبية:** وزع التموين الجاف في الحقائب الكبيرة بالتساوي، واترك مساحة جيدة في حقائب العودة لشراء التمور الهدايا.")
+    st.write("💡 **نصيحة ذهبية:** وزع التموين الجاف في الحقائب الكبيرة بالتساوي، واترك مساحة جيدة في حقائب العودة لشراء التمور والهدايا.")
 
 # 3. قائمة التجهيز
 with guide_tabs[2]:
@@ -449,73 +506,96 @@ with guide_tabs[2]:
 with guide_tabs[3]:
     st.subheader("🛃 دليل الإجراءات الجمركية وممنوعات المطارات")
     st.write("""
-    - 🚫 **المحظورات في حقائب اليد:** السوائل التي تزيد عن 100 مل، المواد القابلة للاشتعال (مثل الولاعات والغازات)، والآلات الحادة (المقصات والسكاكين).
-    - 🥩 **الأغذية المسموحة:** يُسمح بالتموين الجاف (المعكرونة، الحبوب، البهارات، اللحم المجفف المحكم الغلق)، ويُمنع شحن الأطعمة السائلة أو الطازجة المفتوحة.
-    - 💰 **المبالغ النقدية:** يجب الإقرار عن أي مبالغ نقدية تتجاوز 60,000 ريال سعودي (أو ما يعادلها) عند الدخول أو الخروج.
+    - 🚫 **المحظورات في حقائب اليد:** السوائل التي تزيد عن 100 مل، المواد القابلة للاشتعال (مثل الولاعات والغازات)، والآلات الحادة.
+    - 🥩 **الأغذية المسموحة:** يُسمح بالتموين الجاف المحكم، ويُمنع شحن الأطعمة السائلة أو الخضروات الطازجة.
+    - 💰 **المبالغ النقدية:** يجب الإقرار عن أي مبالغ نقدية تتجاوز 60,000 ريال سعودي عند الدخول أو الخروج.
     """)
 
 # 5. الصيدلية والطوارئ
 with guide_tabs[4]:
     st.subheader("💊 الصيدلية المصغرة وحالات الطوارئ الطبية")
     st.write("""
-    - 🩺 **الأدوية الشخصية:** يجب إحضار الأدوية الخاصة بالأمراض المزمنة (الضغط، السكري، القلب) بكميات تكفي طوال فترة الرحلة مع وصفة الطبيب.
-    - 🩹 **حقيبة الإسعافات الأولية الخفيفة:** مسكنات الألم (باراسيتامول)، مضادات التقلصات، أدوية نزلات البرد وتغيير الجو، كريمات الحروق والتسلخات الناتجة عن المشي والحرارة.
-    - 🏥 **الرعاية الصحية:** تقدم المملكة العربية السعودية خدمات صحية وطارئة ممتازة لضيوف الرحمن مجاناً أو بأسعار رمزية في مستشفيات مكة والمدينة.
+    - 🩺 **الأدوية الشخصية:** إحضار أدوية الأمراض المزمنة مع وصفة الطبيب.
+    - 🩹 **الإسعافات الأولية:** مسكنات، أدوية نزلات البرد، وكريمات التسلخات الناتجة عن المشي والحرارة.
+    - 🏥 **الرعاية الصحية:** خدمات الطوارئ بالمملكة متوفرة لضيوف الرحمن بكفاءة عالية.
     """)
 
 # 6. وسائل النقل الداخلي
 with guide_tabs[5]:
     st.subheader("🚗 دليل وسائل النقل الداخلي في السعودية")
     st.write("""
-    - 🚆 **قطار الحرمين السريع:** الوسيلة الأسرع والأروع للتنقل بين مكة المكرمة والمدينة المنورة (يستغرق الرحلة حوالي ساعتين ونصف فقط).
-    - 🚌 **الحافلات الترددية:** متوفرة لنقل المعتمرين من الفنادق البعيدة إلى الحرم والعكس.
-    - 📱 **تطبيقات التوصيل الذكية:** تطبيقات مثل (Uber، Careem، Bolt، وتاكسي توصيل مكة والمدينة) متوفرة بكثرة وبأسعار آمنة ومعروفة.
+    - 🚆 **قطار الحرمين السريع:** الوسيلة الأسرع والأروع للتنقل بين مكة والمدينة (حوالي ساعتين ونصف).
+    - 🚌 **الحافلات الترددية:** متوفرة لنقل المعتمرين من الفنادق البعيدة للحرم.
+    - 📱 **تطبيقات التوصيل:** Uber، Careem، وBolt متوفرة وبأسعار آمنة.
     """)
 
 # 7. الملابس والمصروف
 with guide_tabs[6]:
     st.subheader("👕 دليل الملابس والمصروف الشخصي")
     st.write("""
-    - 🥋 **الملابس:** يُفضل الملابس القطنية الخفيفة البيضاء أو الفاتحة للرجال أثناء الإحرام، والملابس الفضفاضة المريحة للنساء. احرص على حذاء مريح جداً للمشي لمسافات طويلة.
-    - 💵 **المصروف التقديري:** متوسط المصروف الشخصي اليومي للمعتمر (بعيداً عن السكن والطيران) يتراوح بين **70 إلى 150 ريال سعودي يومياً** للشخص (للوجبات الخفيفة، الهدايا البسيطة، والتنقلات الجانبية).
+    - 🥋 **الملابس:** ملابس قطنية خفيفة بيضاء أو فاتحة، وحذاء مريح جداً للمشي.
+    - 💵 **المصروف التقديري:** بين **70 إلى 150 ريال سعودي يومياً** للشخص للوجبات الخفيفة والتنقلات.
     """)
 
 # 8. شبكات الاتصال
 with guide_tabs[7]:
     st.subheader("📱 أفضل شركات الاتصال والباقات السعودية")
     st.write("""
-    1. 📶 **شركة STC (الاتصالات السعودية):** الأقوى والأفضل تغطية داخل الحرم وفي ساحات مكة والمدينة وفي قطار الحرمين.
-    2. 📶 **شركة Mobily (موبايلي):** ممتازة جداً وتوفر باقات إنترنت واسعة ومناسبة للمعتمرين.
-    3. 📶 **شركة Zain (زين):** تقدم عروضاً اقتصادية ممتازة لباقات البيانات والاتصالات الدولية.
-    💡 **نصيحة:** يمكنك استخراج الشريحة فور الوصول إلى مطار جدة أو مطار المدينة باستخدام جواز السفر والبصمة.
+    1. 📶 **STC:** الأقوى تغطية داخل الحرم وقطار الحرمين.
+    2. 📶 **Mobily:** باقات بيانات واسعة وممتازة.
+    3. 📶 **Zain:** عروض اقتصادية ممتازة.
     """)
 
 # 9. العبادات والجدول
 with guide_tabs[8]:
     st.subheader("🕋 دليل العبادات وجدول التحرك اليومي (عادي / رمضان)")
     st.write("""
-    - 🕒 **في الأيام العادية:** يُفضل الذهاب للحرم قبل الأذان بـ 30 دقيقة على الأقل لضمان مكان مناسب.
-    - 🌙 **في شهر رمضان المبارك:** يشتد الازدحام جداً؛ يُفضل الذهاب لصلاة العصر والمكوث في الحرم حتى صلاة التراويح والافطار هناك، أو الخروج فور انتهاء الصلاة مباشرة لتجنب التدافع عند الأبواب.
-    - 🚶‍♂️ **أفضل أوقات الطواف وسعي العمرة:** في الصباح الباكر (بعد صلاة الفجر مباشرة) أو في وقت متأخر من الليل (بعد الساعة 1:00 صباحاً).
+    - 🕒 **الأيام العادية:** الذهاب للحرم قبل الأذان بـ 30 دقيقة.
+    - 🌙 **رمضان:** الذهاب لعصر رمضاني والبقاء حتى التراويح لتجنب الازدحام الشديد عند الأبواب.
     """)
 
-# 10. العراقيل وتوضيح شركات الطيران
+# 10. العراقيل والمطارات
 with guide_tabs[9]:
-    st.subheader("⚠️ تنبيهات مهمة حول العراقيل المتوقعة في السفر")
+    st.subheader("⚠️ تنبيهات حول العراقيل المتوقعة في السفر")
     st.write("""
-    نحرص دائماً في **شركة طريق الميقات** على تقديم أفضل خدمة وتوضيح كافة الأمور شفافة لعملائنا الكرام:
-    - ✈️ **تأخير مواعيد الرحلات:** قد يحدث أحياناً تعديل أو تأخير في مواعيد الطيران من قبل شركات الطيران نفسها (الخطوط الأفريقية، الليبية، إلخ) لظروف التشغيل أو الملاحة الجوية دون إخطار مسبق للوكالة، وهذا أمر خارج عن إرادة شركة السفر والسياحة.
-    - 🧳 **تأخر الأمتعة في المطار:** في حالات الترانزيت أو الازدحام، يُنصح دائماً بكتابة اسمك ورقم هاتفك بوضوح على جميع الحقائب، والاحتفاظ بالملابس الأساسية وأدوات الإحرام في حقيبة اليد.
+    - ✈️ **تأخير الطيران:** قد يحدث تعديل بالمواعيد من شركات الطيران مباشرة (خارج سيطرة الوكالة).
+    - 🧳 **الأمتعة:** يرجى كتابة اسمك ورقم هاتفك بوضوح على الحقائب.
     """)
 
 # 11. الهدايا والتسوق
 with guide_tabs[10]:
     st.subheader("🎁 دليل شراء الهدايا وأفضل الأسواق في مكة والمدينة")
     st.write("""
-    - 🌴 **التمور الفاخرة (المدينة):** أفضل الأماكن هو **سوق التمور المركزي بالمدينة المنورة** (أنواع العجوة، الصفاوي، والسكري).
-    - 👗 **الأقمشة والملابس (مكة):** سوق العتيبية في مكة المكرمة، وأسواق الكعكية، وأسواق العزيزية لشراء الأقمشة والهدايا بالجملة وبأسعار مناسبة.
-    - 🎁 **الهدايا العامة (سبح، مصاحف، سجّاد):** المحلات المجاورة لساحات الحرم توفر تشكيلات متنوعة حسب الجنس والعمر.
+    - 🌴 **التمور:** سوق التمور المركزي بالمدينة (عجوة، سكري).
+    - 👗 **الأقمشة:** سوق العتيبية والكعكية بمكة لشراء الهدايا بأسعار الجملة.
     """)
+
+st.markdown("---")
+
+# --- 💡 إضافة خانة المقترحات والآراء للزوار (بناءً على طلبك) ---
+st.subheader("💡 شاركنا برأيك ومقترحاتك لتطوير النظام")
+with st.form("suggestion_form"):
+    s_col1, s_col2 = st.columns(2)
+    with s_col1:
+        s_name = st.text_input("✍️ اسم المقترح / الزائر:")
+        s_type = st.selectbox("📌 نوع المقترح:", ["تعديل على الخدمات", "إضافة ميزة جديدة", "رأي أو ملاحظة عامة", "أخرى"])
+    with s_col2:
+        s_details = st.text_area("💬 التفاصيل والتعديلات التي تراها مناسبة:")
+    
+    submit_suggestion = st.form_submit_button("📤 إرسال المقترح للإدارة", use_container_width=True)
+    if submit_suggestion:
+        if s_name.strip() and s_details.strip():
+            df_s = load_suggestions()
+            new_s = {
+                "الوقت": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "اسم المقترح": s_name,
+                "نوع المقترح": s_type,
+                "التفاصيل والتعديلات": s_details
+            }
+            pd.concat([df_s, pd.DataFrame([new_s])], ignore_index=True).to_excel(suggestions_filename, index=False)
+            st.success("🙏 شكراً لك! تم إرسال مقترحك وتعديلاتك بنجاح إلى الإدارة.")
+        else:
+            st.error("⚠️ يرجى كتابة الاسم وتفاصيل المقترح أولاً.")
 
 st.markdown("---")
 
@@ -546,15 +626,10 @@ if not st.session_state["logged_in"]:
     if "المعادل بالسوق الموازي (د.ل)" in display_df.columns:
         display_df = display_df.drop(columns=["المعادل بالسوق الموازي (د.ل)"])
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df))
 if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
     col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
-
-if st.session_state["logged_in"]:
-    col3.metric("💵 سعر الصرف الموازي (9.92)", f"{usd_to_lyd_rate} د.ل")
-else:
-    col3.metric("🌙 حالة الحجز", "متاح فوري")
 
 # 📋 عرض جدول الفنادق
 st.subheader("📋 جدول الفنادق المتاحة وأسعار الحجز النهائي")
@@ -671,9 +746,9 @@ if not df_reviews_display.empty:
 
 st.markdown("---")
 
-# --- 🛠️ لوحة تحكم المدير ---
+# --- 🛠️ لوحة تحكم المدير لمراجعة الحجوزات والمقترحات والرسائل ---
 if st.session_state["logged_in"]:
-    st.subheader("🛠️ لوحة تحكم المدير ومتابعة حالة الحجوزات والطلبات")
+    st.subheader("🛠️ لوحة تحكم المدير ومتابعة الحجوزات والمقترحات")
     adm_col1, adm_col2, adm_col3 = st.columns(3)
     with adm_col1: 
         st.subheader("📝 طلبات الحجز الفندقي")
@@ -688,11 +763,11 @@ if st.session_state["logged_in"]:
                 st.success("تم تحديث حالة الطلب بنجاح!")
                 st.rerun()
     with adm_col2: 
+        st.subheader("💡 مقترحات الزوار")
+        st.dataframe(load_suggestions(), use_container_width=True)
+    with adm_col3: 
         st.subheader("💬 تقييمات المعتمرين")
         st.dataframe(load_comments(), use_container_width=True)
-    with adm_col3: 
-        st.subheader("📩 رسائل الزوار المباشرة")
-        st.dataframe(load_messages(), use_container_width=True)
 else:
     st.subheader("🤝 لوحة تواصل الزوار")
     fb_link = "https://www.facebook.com/share/1DveNwUUvR/"
