@@ -8,21 +8,18 @@ from PIL import Image
 # 🕋 إعداد واجهة الصفحة
 st.set_page_config(page_title="دليل المعتمر - نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
 
-# 🔒 جدار الأمان الذكي وحماية قوية جداً
+# 🔒 جدار الأمان الذكي والحماية القوية
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-ad_img_paths = ["ad1.png", "ad2.png", "ad3.png", "ad4.png"]
-slider_img_paths = [f"slider_{i}.png" for i in range(1, 6)]
+excel_filename = "makkah_madinah_full_hotels_v21.xlsx"
+comments_filename = "visitor_comments_database_v21.xlsx"
+bookings_filename = "visitor_bookings_database_v21.xlsx"
+suggestions_filename = "visitor_suggestions_database_v21.xlsx"
+subscribers_filename = "subscribers_database_v21.xlsx"
+stats_filename = "visitor_stats_v21.txt"
+notice_filename = "admin_notice_v21.txt"
 
-excel_filename = "makkah_madinah_full_hotels_v20.xlsx"
-comments_filename = "visitor_comments_database_v20.xlsx"
-bookings_filename = "visitor_bookings_database_v20.xlsx"
-suggestions_filename = "visitor_suggestions_database_v20.xlsx"
-subscribers_filename = "subscribers_database_v20.xlsx"
-stats_filename = "visitor_stats_v20.txt"
-notice_filename = "admin_notice_v20.txt"
-
-# عداد الزوار وحفظ الـ IP افتراضياً
+# عداد الزوار
 def track_visitor():
     try:
         visits = 0
@@ -37,12 +34,7 @@ def track_visitor():
         return 1
 
 total_visits = track_visitor()
-
-# جلب سعر الصرف أو افتراضي 9.92
-def fetch_live_usd_rate():
-    return 9.92
-
-current_usd_rate = fetch_live_usd_rate()
+current_usd_rate = 9.92  # سعر السوق السوداء المحدث
 
 def get_admin_notice():
     if os.path.exists(notice_filename):
@@ -57,7 +49,7 @@ def save_admin_notice(text):
     with open(notice_filename, "w", encoding="utf-8") as f:
         f.write(text)
 
-# 📢 شريط الإعلان والتذكير العاجل القابل للتعديل
+# 📢 شريط الإعلان والتذكير العاجل
 st.markdown("""
 <div style="background-color: #1e3d59; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
     🌙 عروض و رحلات العمرة متوفرة بأفضل الأسعار - دليل المعتمر الشامل
@@ -174,7 +166,7 @@ def get_all_makkah_hotels():
         "فندق أصول الجوهرة", "فندق جراند الشهباء الكعكية", "Hotel Alshahba Alazizia", "فندق أوتاد المتحدة 4 الروضة", "فندق البلاد اثنين 1 مكة", 
         "فندق البلاد اثنين 2 مكة", "فندق الفارابي", "فندق العليان الذهبي المسفلة", "فندق الرفاع العزيزية مكة المكرمة", "فندق الوافدين", 
         "شركة أبراج حفاوة الفندقية", "فندق الأرض المتميزة", "فندق الأولين حياة", "فندق طريق الحياة", "فندق المجد", "فندق العرابي", 
-        "الريادة جراند", "فندق السكرية", "فندق أمل المشاعر", "فندق عملاق المشرق", "فندق أركان المطاف", "عصفور هوتل 01", "عصفور هوتل 02", 
+        "الريادة جراند", "fندق السكرية", "فندق أمل المشاعر", "فندق عملاق المشرق", "فندق أركان المطاف", "عصفور هوتل 01", "عصفور هوتل 02", 
         "فندق برادايس لاند", "فندق بلال", "فندق برج فرح", "فندق سنت العزيزية مكة المكرمة", "ضيف العزيزية", "فندق ديمورا العزيزية", 
         "فندق جراند جواهر الهاشمية، مكة المكرمة", "فندق إيليت المشاعر", "فندق مدينة الزهراء", "فندق توحيد الأصالة", "فندق جواهر الهاشمية 6", 
         "جوهرة الديار - 1", "جوهرة المحبة", "فندق جوهرة الصلاح مكة", "فندق كيان الراية مكة المكرمة", "فندق لؤلؤة المسك", "فندق منار الأزهر", 
@@ -190,11 +182,11 @@ def get_all_makkah_hotels():
         "فندق جولدن توليب المكتان", "فندق غراند الاندلس", "فندق سرايا طابة", "فندق حياة انترناشونال المدينة", "فندق نزل الشاكرين",
         "فندق زوار انترناشيونال", "فندق سفراء الهدى", "فندق دار النعيم", "فندق الإيمان القبلة", "فندق مودة الصفوة", "فندق مودة الواحة",
         "فندق الصالحية الذهبى", "فندق مراج طيبه", "فندق الإيمان أحد", "فندق روتانا المسك", "فندق إيلاف طيبة", "رويال أمجاد السلام", "فندق العليان",
-        "الفيروز الماسي (فندق جلوريا المدينة)", "fندق ماريوت المدينة", "فندق وكن الحرم النبوي", "فندق العقيق آراك",
+        "الفيروز الماسي (فندق جلوريا المدينة)", "فندق ماريوت المدينة", "فندق وكن الحرم النبوي", "فندق العقيق آراك",
         "فندق ديار انترناشونال", "فندق المني كريم راديسون بلو المدينة", "فندق رويال ديار", "فندق المدينة أراماس", "فندق روضة مبارك", "فندق الإشراق",
-        "فندق الوسام", "fندق زهرة مبارك", "فندق أريس الجوار", "فندق رمادا", "فندق ديار المدينة", "فندق روضة الأمل", "فندق زمرد قرطاج",
+        "فندق الوسام", "فندق زهرة مبارك", "فندق أريس الجوار", "فندق رمادا", "فندق ديار المدينة", "فندق روضة الأمل", "فندق زمرد قرطاج",
         "فندق وصل الذهبي", "فندق البديع شركة إلياس", "فندق السرايا المدينة", "فندق وصل الريم", "فندق الصافية إلياس", "فندق برج الأمل",
-        "فندق المنارة كروم", "فندق الشرق", "fندق الصافي هلا", "فندق الدار", "قصر الخليل الشاكرين", "فندق مودة النور", "فندق الشهباء",
+        "فندق المنارة كروم", "فندق الشرق", "فندق الصافي هلا", "فندق الدار", "قصر الخليل الشاكرين", "فندق مودة النور", "فندق الشهباء",
         "فندق الأندلس دار الخير", "فندق ارماس", "فندق الهدى منازلي", "فندق مكارم المدينة الذهبي", "فندق بدر العوالي"
     ]
 
@@ -280,7 +272,7 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط (صلاحيات كاملة للتحكم في الإعلانات، الأسعار، مراجعة مقترحات الزوار مع صورها)")
+    st.success("✓ وضع المدير نشط (صلاحيات كاملة للتحكم في الإعلانات، الأسعار، ومراجعة المقترحات)")
     
     st.markdown("### 📝 تحديث نص التذكير العاجل:")
     new_notice_input = st.text_input("نص التذكير العاجل:", value=current_notice)
@@ -300,10 +292,9 @@ else:
 
 st.markdown("---")
 
-# إحصائيات الزوار
+# إحصائيات الزوار والتسجيل
 st.info(f"👥 إجمالي عدد زيارات الموقع حتى الآن: **{total_visits} زائر**")
 
-# خيار التسجيل في الموقع للتنبيهات
 with st.expander("🔔 التسجيل في الموقع لتلقي التنبيهات والتحديثات الفورية"):
     with st.form("sub_form"):
         sub_name = st.text_input("الاسم الكريم:")
@@ -320,7 +311,7 @@ with st.expander("🔔 التسجيل في الموقع لتلقي التنبي�
 
 st.markdown("---")
 
-# --- 🧮 حاسبة المسافة المرتبطة بالفنادق، خرائط جوجل ومحول العملات ---
+# --- 🧮 حاسبة المسافة والعملات ---
 st.subheader("🧮 حاسبة المسافة من الفندق إلى الحرم ومحول العملات اللحظي")
 
 calc_c1, calc_c2, calc_c3 = st.columns(3)
@@ -339,7 +330,7 @@ with calc_c1:
 with calc_c2:
     st.write("🗺️ **الملاحة السريعة العامة:**")
     st.write("")
-    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%D8%AC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
+    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%D8%AC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D8%B5+%D9%85%D9%83%D8%A9"
     st.markdown(f"[🗺️ فتح الحرم المكي في الخرائط]({maps_direct_link})", unsafe_allow_html=True)
 
 with calc_c3:
@@ -350,7 +341,7 @@ with calc_c3:
 
 st.markdown("---")
 
-# --- 🧳 جدول استفسارات ودليل المسافر الشامل (محدث بالكامل حسب طلبك) ---
+# --- 🧳 دليل المعتمر الشامل ---
 st.header("🧳 دليل المعتمر الشامل - الاستفسارات والتعليمات")
 
 guide_tabs = st.tabs([
@@ -367,136 +358,85 @@ guide_tabs = st.tabs([
     "🎁 الهدايا والتسوق"
 ])
 
-# 1. حاسبة التموين الذكية المحدثة
 with guide_tabs[0]:
-    st.subheader("🥗 حاسبة التموين الجاف المحدثة (حسب طلبك)")
+    st.subheader("🥗 حاسبة التموين الجاف المحدثة")
     tc1, tc2, tc3 = st.columns(3)
-    with tc1:
-        num_p = st.number_input("عدد الأشخاص:", min_value=1, max_value=100, value=2, key="p_num_t")
-    with tc2:
-        m_days = st.number_input("أيام المدينة:", min_value=0, max_value=30, value=3, key="m_days_t")
-    with tc3:
-        mk_days = st.number_input("أيام مكة:", min_value=0, max_value=30, value=11, key="mk_days_t")
+    with tc1: num_p = st.number_input("عدد الأشخاص:", min_value=1, max_value=100, value=2, key="p_num_t")
+    with tc2: m_days = st.number_input("أيام المدينة:", min_value=0, max_value=30, value=3, key="m_days_t")
+    with tc3: mk_days = st.number_input("أيام مكة:", min_value=0, max_value=30, value=11, key="mk_days_t")
     
     if m_days + mk_days > 0:
         st.success(f"📊 **الكميات المطلوبة لعدد ({num_p}) أشخاص:**")
         col_x, col_y = st.columns(2)
         with col_x:
-            st.write(f"- 🥫 **طماطم معلب:** {num_p * 2.5} علبة (علبتان ونصف لكل شخص)")
-            st.write(f"- 🍝 **معكرونة:** {num_p * 2} كجم (2 كيلو لكل شخص)")
-            st.write(f"- 🐟 **التونة:** {num_p * 4} علبة (4 علب لكل شخص)")
-            st.write(f"- 🍚 **الأرز:** {num_p * 1} كجم (كيلو لكل شخص)")
-            st.write(f"- 🌾 **الكسكسي:** {num_p * 1} كجم (كيلو لكل شخص)")
-            st.write(f"- 🧀 **الجبن:** {num_p * 2} علبة (علبتان لكل شخص)")
-            st.write(f"- 🧂 **السكر:** {num_p * 1} كجم (كيلو لكل شخص)")
+            st.write(f"- 🥫 طماطم معلب: {num_p * 2.5} علبة (علبتان ونصف للشخص)")
+            st.write(f"- 🍝 معكرونة: {num_p * 2} كجم (2 كيلو للشخص)")
+            st.write(f"- 🐟 التونة: {num_p * 4} علبة (4 علب للشخص)")
+            st.write(f"- 🍚 الأرز: {num_p * 1} كجم (كيلو للشخص)")
+            st.write(f"- 🌾 الكسكسي: {num_p * 1} كجم (كيلو للشخص)")
+            st.write(f"- 🧀 الجبن: {num_p * 2} علبة (علبتان للشخص)")
+            st.write(f"- 🧂 السكر: {num_p * 1} كجم (كيلو للشخص)")
         with col_y:
-            st.write(f"- 🍪 **البسكويت:** حسب الطلب (يتوفر بسهولة في السعودية)")
-            st.write(f"- 🥄 **الملاعق:** {num_p * 2} ملاعق (ملعقتان لكل شخص)")
-            st.write(f"- 🔪 **سكين لتقطيع اللحوم والخضروات:** مطلوب أساسي")
-            st.write(f"- ✨ **إضافات أخرى حسب الطلب:** مكسرات، قهوة، شاي، شوكولاتة، وحلويات شعبية")
-        st.warning("💡 **ملاحظة هامة:** لا يُنصح بنقل الخضار الطازجة من ليبيا نهائياً لتوفرها بجودة عالية وأسعار مناسبة جداً في السعودية.")
+            st.write("- 🍪 البسكويت: حسب الطلب")
+            st.write(f"- 🥄 الملاعق: {num_p * 2} ملاعق (ملعقتان للشخص)")
+            st.write("- 🔪 سكين لتقطيع اللحوم والخضروات: مطلوب أساسي")
+            st.write("- ✨ إضافات: مكسرات، قهوة، شاي، شوكولاتة، وحلويات شعبية")
+        st.warning("💡 لا يُنصح بنقل الخضار الطازجة لتوفرها بجودة عالية وأسعار مناسبة جداً في السعودية.")
 
-# 2. الأمتعة والأوزان
 with guide_tabs[1]:
     st.subheader("🧳 أوزان الحقائب وطرق تفادي الوزن الزائد")
-    st.write("""
-    - ✈️ **التذكرة العادية:** يحق للفرد 23 كجم حقيبة أسفل الطائرة + حقيبة يد (هاند باق) من 7 إلى 10 كجم.
-    - 💼 **تذكرة رجال الأعمال:** من 32 إلى 40 كجم (والأفضل ألا تتجاوز 32 كجم) + حقيبة يد 10 كجم.
-    - 💡 **نصيحة لتفادي الوزن الزائد:** اقتسام الوزن بين أفراد المجموعة، أو الاتفاق مع مسافر آخر لمشاركة الوزن الزائد إذا وافق.
-    - 🚕 **النقل الاقتصادي:** يمكن لشخصين استقلال تاكسي بمبلغ 10 ريال فقط في غالب المناطق التي يسكن فيها المعتمرون الليبيون.
-    """)
+    st.write("التذكرة العادية 23 كجم حقيبة أسفل الطائرة + 7 إلى 10 كجم هاند باق. رجال الأعمال حتى 32 كجم.")
 
-# 3. الملابس والمصروف
 with guide_tabs[2]:
     st.subheader("👕 الملابس والمصروف الشخصي")
-    st.write("""
-    - 🩳 **الملابس:** 5 قطع ملابس داخلية (تيشيرت داخلي وبوكسر)، 5 هركة أو بدلة عربية، شبشب واحد، سبيدرو واحد. في حال البقاء للعيد في رمضان، تضاعف الكمية بحسب الاستخدام، مع إحضار اللباس التراثي الليبي للمناسبات ولباس خاص بالنوم.
-    - 🧴 **العناية الشخصية:** مزيل عرق (علبة لرحلة 14 يوماً، و3 علب للشهر)، علبة شامبو جسم وشعر صغيرة، معجون أسنان، فرشاة، مشط، وجوارب حسب الرغبة.
-    - 💵 **المصروف:** الأفضل توزيع الحمل بتجميع 50 ريال من كل شخص عند شخص واحد يتكفل بشراء التموين والخضار حتى نفاذها ثم تجميع قيمة أخرى.
-    """)
+    st.write("5 قطع ملابس داخلية، 5 هركة أو بدلة عربية، شبشب، وسبيدرو. تضاعف الكمية في حال البقاء للعيد في رمضان. وتجميع 50 ريال لكل شخص للمصروف المشترك.")
 
-# 4. الصيدلية والطوارئ
 with guide_tabs[3]:
-    st.subheader("💊 الصيدلية المقترحة للسفر من ليبيا")
-    st.write("""
-    - بندول أزرق وبندول أحمر
-    - فيتامين سي
-    - سودا كريم
-    - قطرة أنف
-    - أقراص 123
-    - ديفيدوا
-    - باكو لاصق جروح
-    - حلاوة علاجية للرقبة
-    """)
+    st.subheader("💊 الصيدلية المقترحة للسفر")
+    st.write("بندول أزرق وأحمر، فيتامين سي، سودا كريم، قطرة أنف، 123، ديفيدوا، لاصق جروح، وحلاوة علاجية للرقبة.")
 
-# 5. الاتصالات والباقات
 with guide_tabs[4]:
-    st.subheader("📱 الاتصالات وشفرات الانترنت في السعودية")
-    st.write("""
-    - 📶 شفرة بقيمة 60 ريال من إحدى الشركات تكفي لمدة أسبوعين إنترنت واتصالات داخلية.
-    - 💡 **نصيحة لتوفير الباقات:** استخدم واي فاي الفندق وأغلق برامج الخلفية غير المهمة.
-    - 🌐 يمكنك شراء شفرة دولية تحتوي على إنترنت وتعمل في الأراضي السعودية تباع داخل مطار معيتيقة الدولي بالدينار الليبي والسعر حسب الطلب.
-    """)
+    st.subheader("📱 الاتصالات وشفرات الانترنت")
+    st.write("شفرة 60 ريال تكفي أسبوعين. وتتوفر شفرات دولية بمطار معيتيقة الدولي بالدينار الليبي.")
 
-# 6. العبادات ويوم الجمعة
 with guide_tabs[5]:
-    st.subheader("🕋 العبادات، الحرمين، وأحكام صلاة الجمعة")
-    st.write("""
-    - 🕌 **الصلوات:** الأفضل الصلاة داخل المسجد الحرام. إن تعذر، فصلِّ الفجر بالحرم واجلس للشروق ثم ارجع للفندق، وصلِّ الظهر بأقرب مسجد للفندق واخرج للحرم قبل العصر بساعة أو نصف ساعة. في المدينة المنورة الفنادق قريبة ويمكن صلاة كل الأوقات بالحرم المدني.
-    - 👟 **نصيحة الأحذية:** خذ معك كيس بلاستيك تضع فيه حذائك وتضعه في الأماكن المرقمة، واحرص على تصوير رقم الرف حتى لا تتوه عنه!
-    - 📜 **صلاة الجمعة:** تغلق الأبواب باكراً؛ انطلق قبل الساعة 10:00 صباحاً لتضمن مكانك. 
-    *قال ﷺ: (الرائح إلى الجمعة في الساعة الأولى كالمقرب بدنة...) رواه البخاري ومسلم.*
-    - 🤲 **الدعاء يوم الجمعة:** الثابت أنها ما بين صلاة العصر إلى غروب الشمس، أو آخر ساعة من يوم الجمعة (ابن باز).
-    """)
+    st.subheader("🕋 العبادات وأحكام صلاة الجمعة")
+    st.write("احرص على الصلاة في الحرمين الشريفين، وخذ معك كيس بلاستيك للحذاء مع حفظ رقم الرف. وتوجه للحرم باكراً قبل العاشرة صباحاً يوم الجمعة.")
 
-# 7. كيفية أداء العمرة
 with guide_tabs[6]:
-    st.subheader("🕋 دليل كيفية أداء العمرة للرجل والمرأة")
-    st.markdown("[🎥 شاهد فيديو شرح كيفية أداء العمرة](https://www.youtube.com/watch?v=6u-Xj1s3vEg)", unsafe_allow_html=True)
-    st.markdown("[📖 اقرأ المقال الشامل لمناسك العمرة (موقع زاد العمرة)](https://zadumrah.com/blog/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%8لل%D8%B9%D9%85%D8%B1%D8%A9-%D9%83%D8%A7%D9%85%D9%84%D8%A9)", unsafe_allow_html=True)
+    st.subheader("🕋 كيفية أداء العمرة")
+    st.markdown("[🎥 مشاهدة فيديو شرح العمرة](https://www.youtube.com/watch?v=6u-Xj1s3vEg)")
+    st.markdown("[📖 مقال مناسك العمرة (زاد العمرة)](https://zadumrah.com/blog/%D9%85%D9%86%D8%A7%D8%B3%D9%83-%D8%A7%D9%8لل%D8%B9%D9%85%D8%B1%D8%A9-%D9%83%D8%A7%D9%85%D9%84%D8%A9)")
 
-# 8. مطاعم المدينة المنورة
 with guide_tabs[7]:
-    st.subheader("🍽️ دليل مطاعم المدينة المنورة (مع خرائط جوجل)")
-    st.markdown("- [مطعم الرومانسية - المدينة المنورة](https://maps.app.goo.gl/eXLWec8NDDpUZ9r16)")
+    st.subheader("🍽️ مطاعم المدينة المنورة")
+    st.markdown("- [مطعم الرومانسية](https://maps.app.goo.gl/eXLWec8NDDpUZ9r16)")
     st.markdown("- [فراولتي سلطانه](https://maps.app.goo.gl/mKb5kU5xZTqHgqnH6)")
-    st.markdown("- [عالم الوسام فرع المدينة المنورة](https://maps.app.goo.gl/d47HSmRFsbzsUaKaA)")
-    st.markdown("- [حاشي باشا | فرع الربوة](https://maps.app.goo.gl/Ke7qhVrpBCfkvHND6?g_st=iw)")
-    st.markdown("- [مطعم ريدان (مندي وكبسة)](https://goo.gl/maps/GsPBE9HAmLG2fEzq6)")
-    st.markdown("- [منجتي أحلى](https://maps.app.goo.gl/vthntNv7kELpv4839)")
+    st.markdown("- [عالم الوسام](https://maps.app.goo.gl/d47HSmRFsbzsUaKaA)")
+    st.markdown("- [حاشي باشا](https://maps.app.goo.gl/Ke7qhVrpBCfkvHND6?g_st=iw)")
+    st.markdown("- [مطعم ريدان](https://goo.gl/maps/GsPBE9HAmLG2fEzq6)")
     st.markdown("- [مطعم البيك](https://maps.app.goo.gl/6dBdoG9bwZMyZXLx5)")
-    st.markdown("- [مطعم ومطبخ أمواج الخليج](https://maps.app.goo.gl/y1Ht6DhQisB5MZz3A)")
 
-# 9. مطاعم مكة المكرمة
 with guide_tabs[8]:
-    st.subheader("🍽️ دليل مطاعم مكة المكرمة (مع خرائط جوجل)")
+    st.subheader("🍽️ مطاعم مكة المكرمة")
     st.markdown("- [مطعم ريدان](https://maps.app.goo.gl/84kdUPqxL3i8xHuz8)")
     st.markdown("- [مطعم الطازج](https://maps.app.goo.gl/Uo5mmxoCBN4N2vt1A)")
     st.markdown("- [مطعم الرومانسية](https://maps.app.goo.gl/iNy3bX8Dv7xzUBe46)")
-    st.markdown("- [مطعم المعلم](https://maps.app.goo.gl/8qzGTHYoTHmSF95w8?g_st=iw)")
-    st.markdown("- [مطعم حراء (شركة مكة للإنشاء والتعمير)](https://maps.app.goo.gl/pzZ1uw9y5yJ6fQBw9)")
     st.markdown("- [البيك إكسبريس](https://maps.app.goo.gl/thY6c2YKRTMTm8z98)")
-    st.markdown("- [مطعم ريدان العزيزية](https://maps.app.goo.gl/TCHwENHinJCppYaAA)")
 
-# 10. العراقيل والمطارات
 with guide_tabs[9]:
-    st.subheader("⚠️ العراقيل المتوقعة والمطارات")
-    st.write("أغلب المشاكل تتعلق بالوزن الزائد أو تأخير وإلغاء الرحلات من شركة الطيران الأم، وهي أمور خارجة عن إرادة شركة العمرة.")
+    st.subheader("⚠️ العراقيل والمتوقع في السفر")
+    st.write("مشاكل الوزن وتأخير الطيران تعود لشركة الطيران الأم.")
 
-# 11. الهدايا والتسوق
 with guide_tabs[10]:
-    st.subheader("🎁 الهدايا وأفضل أسواق التسوق")
-    st.write("""
-    - **سوق سلام في العزيزية:** خيار ممتاز من حيث الأسعار وتنوع الخيارات.
-    - **أسواق أبراج الساعة:** تتوفر فيها خيارات واسعة.
-    - **أفضل الهدايا:** العطور الزيتية، البخور، والتمور الفاخرة.
-    """)
+    st.subheader("🎁 الهدايا وأسواق التسوق")
+    st.write("سوق سلام في العزيزية وأبراج الساعة. وأفضل الهدايا العطور والتمور.")
 
 st.markdown("---")
 
-# --- 💡 خانة المقترحات المحدثة (مع إمكانية رفع صورة للمقترح وصلاحية الأدمن) ---
+# --- 💡 خانة المقترحات مع إرفاق صورة ---
 st.subheader("💡 شاركنا برأيك ومقترحاتك (مع إمكانية إرفاق صورة)")
-with st.form("suggestion_form_v20"):
+with st.form("suggestion_form_v21"):
     s_name = st.text_input("✍️ اسم المقترح / الزائر:")
     s_type = st.selectbox("📌 نوع المقترح:", ["تعديل على الخدمات", "إضافة ميزة جديدة", "رأي أو ملاحظة عامة", "أخرى"])
     s_details = st.text_area("💬 التفاصيل والتعديلات المناسبة:")
@@ -554,9 +494,8 @@ col1.metric("📊 إجمالي الفنادق المعروضة", len(filtered_df
 if not filtered_df.empty and 'المسافة إلى الحرم (كم)' in filtered_df.columns: 
     col2.metric("📍 أقرب فندق متوفر حالياً", f"{filtered_df['المسافة إلى الحرم (كم)'].min()} كم")
 
-# 📋 عرض جدول الفنادق
+# 📋 جدول الفنادق
 st.subheader("📋 جدول الفنادق المتاحة وأسعار الحجز النهائي (شاملة القيمة المضافة)")
-
 st.data_editor(
     filtered_df,
     use_container_width=True,
@@ -564,7 +503,6 @@ st.data_editor(
     column_config={
         "موقع الفندق على خرائط جوجل": st.column_config.LinkColumn(
             "📍 موقع الفندق على خرائط جوجل",
-            help="اضغط هنا لفتح موقع الفندق مباشرة في خرائط جوجل",
             display_text="🗺️ فتح الموقع في خرائط جوجل"
         ),
         "سعر الحجز النهائي (د.ل)": st.column_config.NumberColumn(
@@ -577,7 +515,7 @@ st.data_editor(
 
 st.markdown("---")
 
-# 📝 استمارة حجز فندقي مباشر
+# 📝 استمارة الحجز المباشر
 st.subheader("📝 استمارة طلب حجز فندقي مباشر للمعتمرين مع إصدار فاتورة مبدئية")
 with st.form("booking_form"):
     b_col1, b_col2 = st.columns(2)
@@ -590,17 +528,11 @@ with st.form("booking_form"):
         b_days = st.number_input("📅 عدد أيام الإقامة:", min_value=1, max_value=30, value=3)
     
     submit_booking = st.form_submit_button("🚀 تأكيد وإرسال طلب الحجز للإدارة", use_container_width=True)
-    
     if submit_booking:
         if b_name.strip() and b_phone.strip():
             hotel_row = df[df["اسم الفندق"] == b_hotel]
             night_price = hotel_row["سعر الحجز النهائي (د.ل)"].values[0] if not hotel_row.empty else 0
-            
-            multiplier = 1.0
-            if "ثلاثية" in room_type: multiplier = 1.25
-            elif "رباعية" in room_type: multiplier = 1.45
-            elif "جناح" in room_type: multiplier = 1.80
-            
+            multiplier = 1.25 if "ثلاثية" in room_type else (1.45 if "رباعية" in room_type else (1.80 if "جناح" in room_type else 1.0))
             total_price = round(night_price * b_days * multiplier, 2)
             
             df_b = load_bookings()
@@ -615,19 +547,33 @@ with st.form("booking_form"):
                 "حالة الطلب": "جديد"
             }
             pd.concat([df_b, pd.DataFrame([new_b])], ignore_index=True).to_excel(bookings_filename, index=False)
-            
-            wa_text = urllib.parse.quote(f"طلب حجز جديد:\nالاسم: {b_name}\nالهاتف: {b_phone}\nالغرفة: {room_type}\nالفندق: {b_hotel}\nالأيام: {b_days}\nالإجمالي: {total_price} د.ل")
+            wa_text = urllib.parse.quote(f"طلب حجز جديد:\nالاسم: {b_name}\nالهاتف: {b_phone}\nالغرفة: {room_type}\nالفندق: {b_hotel}\nالإجمالي: {total_price} د.ل")
             wa_link = f"https://wa.me/?text={wa_text}"
             
             st.success(f"🎉 تم تسجيل طلب حجزك بنجاح! الإجمالي المقدر: **{total_price} دينار ليبي**.")
             st.markdown(f"[📲 اضغط هنا لإرسال تأكيد الحجز مباشرة عبر واتساب الإدارة]({wa_link})")
             st.balloons()
         else:
-            st.error("⚠️ يرجى كتابة الاسم ورقم الهاتف لإكمال الطلب.")
+            st.error("⚠️ يرجى كتابة الاسم ورقم الهاتف.")
 
 st.markdown("---")
 
-# --- 🛠️ لوحة تحكم المدير لمراجعة المقترحات والحجوزات ---
+# --- 🤝 خانات التواصل والأزرار الرئيسية المحدثة والمثبتة بوضوح ---
+st.subheader("🤝 تواصل معنا عبر منصاتنا الرسمية")
+fb_link = "https://www.facebook.com/share/1DveNwUUvR/"
+tiktok_link = "https://www.tiktok.com/@miqat_11june_branch?is_from_webapp=1&sender_device=pc"
+maps_link = "https://maps.app.goo.gl/6VL4dgZ3EuWsj46XA?g_st=ac"
+wa_contact_link = "https://wa.me/"
+
+link_c1, link_c2, link_c3, link_c4 = st.columns(4)
+with link_c1: st.link_button("🌐 صفحة فيسبوك الرسمية", fb_link, use_container_width=True)
+with link_c2: st.link_button("🎵 حساب تيك توك", tiktok_link, use_container_width=True)
+with link_c3: st.link_button("📍 موقعنا بجوجل ماب", maps_link, use_container_width=True)
+with link_c4: st.link_button("💬 مراسلة واتساب الإدارة", wa_contact_link, use_container_width=True)
+
+st.markdown("---")
+
+# --- 🛠️ لوحة تحكم الأدمن ---
 if st.session_state["logged_in"]:
     st.subheader("🛠️ لوحة تحكم الأدمن: مراجعة الحجوزات والمقترحات (مع الصور المرفقة)")
     adm_c1, adm_c2 = st.columns(2)
@@ -638,7 +584,6 @@ if st.session_state["logged_in"]:
         st.subheader("💡 مقترحات الزوار مع الصور")
         sug_df = load_suggestions()
         st.dataframe(sug_df, use_container_width=True)
-        # عرض الصور المرفقة إن وجدت
         for idx, row in sug_df.iterrows():
             if pd.notna(row["مسار الصورة"]) and os.path.exists(str(row["مسار الصورة"])):
                 st.image(row["مسار الصورة"], caption=f"مقترح من: {row['اسم المقترح']}", width=250)
