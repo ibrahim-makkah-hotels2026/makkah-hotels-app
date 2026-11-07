@@ -8,18 +8,19 @@ from PIL import Image
 # 🕋 إعداد واجهة الصفحة
 st.set_page_config(page_title="دليل المعتمر - نظام إدارة ونقل الفنادق المتكامل", page_icon="🕋", layout="wide")
 
-# 🔒 جدار الأمان الذكي والحماية القوية
+# 🔒 جدار الأمان الذكي وحماية قوية جداً
 st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-excel_filename = "makkah_madinah_full_hotels_v21.xlsx"
-comments_filename = "visitor_comments_database_v21.xlsx"
-bookings_filename = "visitor_bookings_database_v21.xlsx"
-suggestions_filename = "visitor_suggestions_database_v21.xlsx"
-subscribers_filename = "subscribers_database_v21.xlsx"
-stats_filename = "visitor_stats_v21.txt"
-notice_filename = "admin_notice_v21.txt"
+excel_filename = "makkah_madinah_full_hotels_v22.xlsx"
+comments_filename = "visitor_comments_database_v22.xlsx"
+bookings_filename = "visitor_bookings_database_v22.xlsx"
+suggestions_filename = "visitor_suggestions_database_v22.xlsx"
+subscribers_filename = "subscribers_database_v22.xlsx"
+admin_messages_filename = "admin_messages_database_v22.xlsx"
+stats_filename = "visitor_stats_v22.txt"
+notice_filename = "admin_notice_v22.txt"
 
-# عداد الزوار
+# عداد الزوار الحقيقي للأدمن
 def track_visitor():
     try:
         visits = 0
@@ -33,8 +34,8 @@ def track_visitor():
     except:
         return 1
 
-total_visits = track_visitor()
-current_usd_rate = 9.92  # سعر السوق السوداء المحدث
+real_visits = track_visitor()
+current_usd_rate = 9.92
 
 def get_admin_notice():
     if os.path.exists(notice_filename):
@@ -48,6 +49,9 @@ def get_admin_notice():
 def save_admin_notice(text):
     with open(notice_filename, "w", encoding="utf-8") as f:
         f.write(text)
+
+def load_admin_messages():
+    return pd.read_excel(admin_messages_filename) if os.path.exists(admin_messages_filename) else pd.DataFrame(columns=["الوقت", "البريد / الاسم", "نص الرسالة"])
 
 # 📢 شريط الإعلان والتذكير العاجل
 st.markdown("""
@@ -159,14 +163,13 @@ def get_all_makkah_hotels():
         "فنادق ميلا مكة", "فندق نيوليفيل - بطحاء قريش", "رفاهية المشاعر", "فندق رفاهية الستين", "روضة ميار", "فندق سرايا عبير مكة المكرمة", 
         "فندق فيرتا الششة مكة المكرمة", "روتانا جبل عمر مكة", "فندق شموخ الشعلة", "بارك بلازا هوتل", "نزلي المعابدة هوتل", 
         "فندق جواهر البيت 2 مكة المكرمة", "فندق مورو العالمية مكة المكرمة", "فندق سما أجياد، مكة", "فندق لاند مارك داركم مكة المكرمة", 
-        "فندق منازل العين أجياد", "فندق ميرة الروضة مكة المكرمة", "فندق ميرة الشعب مكة المكرمة", "فندق مناسك البيت مكة المكرمة", 
-        "فندق الأصول الماسية", "فندق أبراج الفارابي", "فندق الرسالة الماسي", "الزائر المتميز أجياد", "المقام الذهبي", "فندق كنانة العزيزية", 
+        "فندق منازل العين أجياد", "فندق ميرة الروضة مكة المكرمة", "فندق ميرة الشعب مكة المكرمة", "فندق مناسك البيت مكة المكرمة", "فندق الأصول الماسية", "فندق أبراج الفارابي", "فندق الرسالة الماسي", "الزائر المتميز أجياد", "المقام الذهبي", "فندق كنانة العزيزية", 
         "برج الصافات", "ريحانة المكان", "سيف بلص 3", "فندق فيرتا المحبس", "وحدة التيسير", "فندق زاد المشاعر", "فندق ميزاب الخير", 
         "شركة سرايا عبير للفنادق", "فندق غزالة بيوتيفل", "فندق لؤلؤة أجياد", "فندق لؤلؤة الغوار", "فندق طريق الهجرة", "فندق بلورة الدرة", 
         "فندق أصول الجوهرة", "فندق جراند الشهباء الكعكية", "Hotel Alshahba Alazizia", "فندق أوتاد المتحدة 4 الروضة", "فندق البلاد اثنين 1 مكة", 
         "فندق البلاد اثنين 2 مكة", "فندق الفارابي", "فندق العليان الذهبي المسفلة", "فندق الرفاع العزيزية مكة المكرمة", "فندق الوافدين", 
         "شركة أبراج حفاوة الفندقية", "فندق الأرض المتميزة", "فندق الأولين حياة", "فندق طريق الحياة", "فندق المجد", "فندق العرابي", 
-        "الريادة جراند", "fندق السكرية", "فندق أمل المشاعر", "فندق عملاق المشرق", "فندق أركان المطاف", "عصفور هوتل 01", "عصفور هوتل 02", 
+        "الريادة جراند", "فندق السكرية", "فندق أمل المشاعر", "فندق عملاق المشرق", "فندق أركان المطاف", "عصفور هوتل 01", "عصفور هوتل 02", 
         "فندق برادايس لاند", "فندق بلال", "فندق برج فرح", "فندق سنت العزيزية مكة المكرمة", "ضيف العزيزية", "فندق ديمورا العزيزية", 
         "فندق جراند جواهر الهاشمية، مكة المكرمة", "فندق إيليت المشاعر", "فندق مدينة الزهراء", "فندق توحيد الأصالة", "فندق جواهر الهاشمية 6", 
         "جوهرة الديار - 1", "جوهرة المحبة", "فندق جوهرة الصلاح مكة", "فندق كيان الراية مكة المكرمة", "فندق لؤلؤة المسك", "فندق منار الأزهر", 
@@ -261,7 +264,7 @@ def load_suggestions():
     return pd.read_excel(suggestions_filename) if os.path.exists(suggestions_filename) else pd.DataFrame(columns=["الوقت", "اسم المقترح", "نوع المقترح", "التفاصيل والتعديلات", "مسار الصورة"])
 
 def load_subscribers():
-    return pd.read_excel(subscribers_filename) if os.path.exists(subscribers_filename) else pd.DataFrame(columns=["الوقت", "الاسم", "رقم الهاتف / البريد"])
+    return pd.read_excel(subscribers_filename) if os.path.exists(subscribers_filename) else pd.DataFrame(columns=["الوقت", "البريد الإلكتروني"])
 
 df = load_current_data()
 df_flights = get_flights_data()
@@ -272,8 +275,10 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if st.session_state["logged_in"]:
-    st.success("✓ وضع المدير نشط (صلاحيات كاملة للتحكم في الإعلانات، الأسعار، ومراجعة المقترحات)")
+    st.success("✓ وضع المدير نشط (صلاحيات كاملة للتحكم في الإعلانات، الأسعار، مراجعة مقترحات الزوار ورسائل الإدارة)")
     
+    st.markdown(f"📊 **إحصائيات الزيارات الحقيقية للموقع:** {real_visits} زيارة")
+
     st.markdown("### 📝 تحديث نص التذكير العاجل:")
     new_notice_input = st.text_input("نص التذكير العاجل:", value=current_notice)
     if st.button("حفظ التذكير"):
@@ -292,22 +297,31 @@ else:
 
 st.markdown("---")
 
-# إحصائيات الزوار والتسجيل
-st.info(f"👥 إجمالي عدد زيارات الموقع حتى الآن: **{total_visits} زائر**")
+# العداد التحفيزي للزوار (يزداد تلقائياً كل دقيقتين وهمياً كنوع من التحفيز)
+if "visitor_count_display" not in st.session_state:
+    st.session_state["visitor_count_display"] = 1000
+    st.session_state["last_update_time"] = time.time()
 
+current_t_val = time.time()
+if current_t_val - st.session_state["last_update_time"] > 120: # كل دقيقتين
+    st.session_state["visitor_count_display"] += 100
+    st.session_state["last_update_time"] = current_t_val
+
+st.info(f"👥 إجمالي عدد زيارات الموقع حتى الآن: **{st.session_state['visitor_count_display']}**")
+
+# التسجيل بالبريد الإلكتروني فقط
 with st.expander("🔔 التسجيل في الموقع لتلقي التنبيهات والتحديثات الفورية"):
-    with st.form("sub_form"):
-        sub_name = st.text_input("الاسم الكريم:")
-        sub_contact = st.text_input("رقم الهاتف أو البريد الإلكتروني:")
+    with st.form("sub_form_email"):
+        sub_email = st.text_input("البريد الإلكتروني فقط:")
         submit_sub = st.form_submit_button("اشتراك في التنبيهات")
         if submit_sub:
-            if sub_name and sub_contact:
+            if "@" in sub_email:
                 df_sub = load_subscribers()
-                new_sub = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "الاسم": sub_name, "رقم الهاتف / البريد": sub_contact}
+                new_sub = {"الوقت": time.strftime("%Y-%m-%d %H:%M:%S"), "البريد الإلكتروني": sub_email}
                 pd.concat([df_sub, pd.DataFrame([new_sub])], ignore_index=True).to_excel(subscribers_filename, index=False)
-                st.success("🎉 تم تسجيلك بنجاح لتلقي التنبيهات!")
+                st.success("🎉 تم تسجيل بريدك بنجاح لتلقي التنبيهات!")
             else:
-                st.error("يرجى إدخال البيانات المطلوبة.")
+                st.error("⚠️ يرجى إدخال بريد إلكتروني صحيح.")
 
 st.markdown("---")
 
@@ -330,7 +344,7 @@ with calc_c1:
 with calc_c2:
     st.write("🗺️ **الملاحة السريعة العامة:**")
     st.write("")
-    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%D8%AC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D8%B5+%D9%85%D9%83%D8%A9"
+    maps_direct_link = "https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D8%B3%D8%AC%D8%AF+%D8%A7%D9%84%D8%AD%D8%B1%D8%A7%D9%85+%D9%85%D9%83%D8%A9"
     st.markdown(f"[🗺️ فتح الحرم المكي في الخرائط]({maps_direct_link})", unsafe_allow_html=True)
 
 with calc_c3:
@@ -436,7 +450,7 @@ st.markdown("---")
 
 # --- 💡 خانة المقترحات مع إرفاق صورة ---
 st.subheader("💡 شاركنا برأيك ومقترحاتك (مع إمكانية إرفاق صورة)")
-with st.form("suggestion_form_v21"):
+with st.form("suggestion_form_v22"):
     s_name = st.text_input("✍️ اسم المقترح / الزائر:")
     s_type = st.selectbox("📌 نوع المقترح:", ["تعديل على الخدمات", "إضافة ميزة جديدة", "رأي أو ملاحظة عامة", "أخرى"])
     s_details = st.text_area("💬 التفاصيل والتعديلات المناسبة:")
@@ -547,36 +561,51 @@ with st.form("booking_form"):
                 "حالة الطلب": "جديد"
             }
             pd.concat([df_b, pd.DataFrame([new_b])], ignore_index=True).to_excel(bookings_filename, index=False)
-            wa_text = urllib.parse.quote(f"طلب حجز جديد:\nالاسم: {b_name}\nالهاتف: {b_phone}\nالغرفة: {room_type}\nالفندق: {b_hotel}\nالإجمالي: {total_price} د.ل")
-            wa_link = f"https://wa.me/?text={wa_text}"
-            
             st.success(f"🎉 تم تسجيل طلب حجزك بنجاح! الإجمالي المقدر: **{total_price} دينار ليبي**.")
-            st.markdown(f"[📲 اضغط هنا لإرسال تأكيد الحجز مباشرة عبر واتساب الإدارة]({wa_link})")
             st.balloons()
         else:
             st.error("⚠️ يرجى كتابة الاسم ورقم الهاتف.")
 
 st.markdown("---")
 
-# --- 🤝 خانات التواصل والأزرار الرئيسية المحدثة والمثبتة بوضوح ---
+# --- 💬 أرسل رسالة للمدير (مراسلة داخلية تصل للأدمن مباشرة) ---
+st.subheader("💬 أرسل رسالة مباشرة لإدارة الشركة")
+with st.form("admin_message_form"):
+    msg_name = st.text_input("اسمك الكريم أو بريدك:")
+    msg_text = st.text_area("نص الرسالة أو الاستفسار الموجه للإدارة:")
+    submit_msg = st.form_submit_button("إرسال الرسالة للمدير", use_container_width=True)
+    if submit_msg:
+        if msg_name.strip() and msg_text.strip():
+            df_m = load_admin_messages()
+            new_m = {
+                "الوقت": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "البريد / الاسم": msg_name,
+                "نص الرسالة": msg_text
+            }
+            pd.concat([df_m, pd.DataFrame([new_m])], ignore_index=True).to_excel(admin_messages_filename, index=False)
+            st.success("✓ تم إرسال رسالتك إلى إدارة الشركة بنجاح وسنطلع عليها فوراً.")
+        else:
+            st.error("⚠️ يرجى كتابة الاسم ونص الرسالة.")
+
+st.markdown("---")
+
+# --- 🤝 خانات التواصل والأزرار الرئيسية ---
 st.subheader("🤝 تواصل معنا عبر منصاتنا الرسمية")
 fb_link = "https://www.facebook.com/share/1DveNwUUvR/"
 tiktok_link = "https://www.tiktok.com/@miqat_11june_branch?is_from_webapp=1&sender_device=pc"
 maps_link = "https://maps.app.goo.gl/6VL4dgZ3EuWsj46XA?g_st=ac"
-wa_contact_link = "https://wa.me/"
 
-link_c1, link_c2, link_c3, link_c4 = st.columns(4)
+link_c1, link_c2, link_c3 = st.columns(3)
 with link_c1: st.link_button("🌐 صفحة فيسبوك الرسمية", fb_link, use_container_width=True)
 with link_c2: st.link_button("🎵 حساب تيك توك", tiktok_link, use_container_width=True)
 with link_c3: st.link_button("📍 موقعنا بجوجل ماب", maps_link, use_container_width=True)
-with link_c4: st.link_button("💬 مراسلة واتساب الإدارة", wa_contact_link, use_container_width=True)
 
 st.markdown("---")
 
 # --- 🛠️ لوحة تحكم الأدمن ---
 if st.session_state["logged_in"]:
-    st.subheader("🛠️ لوحة تحكم الأدمن: مراجعة الحجوزات والمقترحات (مع الصور المرفقة)")
-    adm_c1, adm_c2 = st.columns(2)
+    st.subheader("🛠️ لوحة تحكم الأدمن: مراجعة الحجوزات، المقترحات، ورسائل الزوار")
+    adm_c1, adm_c2, adm_c3 = st.columns(3)
     with adm_c1:
         st.subheader("📝 طلبات الحجز الفندقي")
         st.dataframe(load_bookings(), use_container_width=True)
@@ -586,7 +615,10 @@ if st.session_state["logged_in"]:
         st.dataframe(sug_df, use_container_width=True)
         for idx, row in sug_df.iterrows():
             if pd.notna(row["مسار الصورة"]) and os.path.exists(str(row["مسار الصورة"])):
-                st.image(row["مسار الصورة"], caption=f"مقترح من: {row['اسم المقترح']}", width=250)
+                st.image(row["مسار الصورة"], caption=f"مقترح من: {row['اسم المقترح']}", width=200)
+    with adm_c3:
+        st.subheader("💬 رسائل الزوار للمدير")
+        st.dataframe(load_admin_messages(), use_container_width=True)
 
 st.sidebar.markdown("---")
 if os.path.exists(excel_filename):
