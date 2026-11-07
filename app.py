@@ -9,17 +9,18 @@ from PIL import Image
 st.set_page_config(page_title="دليل المعتمر الشامل - نظام إدارة الفنادق", page_icon="🕋", layout="wide")
 
 # 🔒 جدار الأمان الذكي والحماية القوية
-st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: none !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
+st.markdown("<style>#MainMenu {visibility: hidden !important;} footer {visibility: hidden !important;} header {visibility: hidden !important;} .viewerBadge_container__16S6S {display: none !important;} stDeployButton {display: hidden !important;} button[title='View source code'] {display: none !important;} a[href*='github.com'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-excel_filename = "makkah_madinah_full_hotels_v25.xlsx"
-comments_filename = "visitor_comments_database_v25.xlsx"
-bookings_filename = "visitor_bookings_database_v25.xlsx"
-suggestions_filename = "visitor_suggestions_database_v25.xlsx"
-subscribers_filename = "subscribers_database_v25.xlsx"
-admin_messages_filename = "admin_messages_database_v25.xlsx"
-stats_filename = "visitor_stats_v25.txt"
-notice_filename = "admin_notice_v25.txt"
-ads_images_filename = "ads_images_v25.json"
+excel_filename = "makkah_madinah_full_hotels_v26.xlsx"
+comments_filename = "visitor_comments_database_v26.xlsx"
+bookings_filename = "visitor_bookings_database_v26.xlsx"
+suggestions_filename = "visitor_suggestions_database_v26.xlsx"
+subscribers_filename = "subscribers_database_v26.xlsx"
+admin_messages_filename = "admin_messages_database_v26.xlsx"
+stats_filename = "visitor_stats_v26.txt"
+notice_filename = "admin_notice_v26.txt"
+admin_ads_filename = "admin_ads_images_v26.json"
+admin_competetive_filename = "admin_competetive_images_v26.json"
 
 # عداد الزوار الحقيقي للأدمن
 def track_visitor():
@@ -53,6 +54,21 @@ def save_admin_notice(text):
 
 def load_admin_messages():
     return pd.read_excel(admin_messages_filename) if os.path.exists(admin_messages_filename) else pd.DataFrame(columns=["الوقت", "البريد / الاسم", "نص الرسالة"])
+
+# دوال تخزين مسارات صور الأدمن
+import json
+def load_json_list(filename):
+    if os.path.exists(filename):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return []
+
+def save_json_list(filename, data_list):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data_list, f, ensure_ascii=False)
 
 # 📢 شريط الإعلان والتذكير العاجل
 st.markdown("""
@@ -169,7 +185,7 @@ def get_all_makkah_hotels():
         "برج الصافات", "ريحانة المكان", "سيف بلص 3", "فندق فيرتا المحبس", "وحدة التيسير", "فندق زاد المشاعر", "فندق ميزاب الخير", 
         "شركة سرايا عبير للفنادق", "فندق غزالة بيوتيفل", "فندق لؤلؤة أجياد", "فندق لؤلؤة الغوار", "فندق طريق الهجرة", "فندق بلورة الدرة", 
         "فندق أصول الجوهرة", "فندق جراند الشهباء الكعكية", "Hotel Alshahba Alazizia", "فندق أوتاد المتحدة 4 الروضة", "فندق البلاد اثنين 1 مكة", 
-        "فندق البلاد اثنين 2 مكة", "فندق الفارابي", "fندق العليان الذهبي المسفلة", "فندق الرفاع العزيزية مكة المكرمة", "فندق الوافدين", 
+        "فندق البلاد اثنين 2 مكة", "فندق الفارابي", "فندق العليان الذهبي المسفلة", "فندق الرفاع العزيزية مكة المكرمة", "فندق الوافدين", 
         "شركة أبراج حفاوة الفندقية", "فندق الأرض المتميزة", "فندق الأولين حياة", "فندق طريق الحياة", "فندق المجد", "فندق العرابي", 
         "الريادة جراند", "فندق السكرية", "فندق أمل المشاعر", "فندق عملاق المشرق", "فندق أركان المطاف", "عصفور هوتل 01", "عصفور هوتل 02", 
         "فندق برادايس لاند", "فندق بلال", "فندق برج فرح", "فندق سنت العزيزية مكة المكرمة", "ضيف العزيزية", "فندق ديمورا العزيزية", 
@@ -288,21 +304,48 @@ if st.session_state["logged_in"]:
         st.success("تم التحديث!")
         st.rerun()
 
-    # لوحة رفع صور الإعلانات للأدمن
-    st.markdown("### 🖼️ إدارة مساحات وعروض الصور الإعلانية:")
-    uploaded_ad_file = st.file_uploader("اختر صورة إعلانية جديدة لرفعها:", type=["png", "jpg", "jpeg"], key="ad_upload")
-    if uploaded_ad_file:
-        os.makedirs("ads_images", exist_ok=True)
-        ad_path = os.path.join("ads_images", uploaded_ad_file.name)
-        with open(ad_path, "wb") as f:
-            f.write(uploaded_ad_file.getbuffer())
-        
-        # حفظ مسار الصورة في الستيت أو ملف
-        if "ads_list" not in st.session_state:
-            st.session_state["ads_list"] = []
-        if ad_path not in st.session_state["ads_list"]:
-            st.session_state["ads_list"].append(ad_path)
-        st.success("✓ تم رفع وتحديث الصورة الإعلانية بنجاح!")
+    # رفع صور مساحات العروض الإعلانية (المربعات الأربعة)
+    st.markdown("### 🖼️ إدارة مساحات العروض الإعلانية (المربعات الأربعة):")
+    up_ad = st.file_uploader("اختر صورة لإضافتها إلى مساحات العروض:", type=["png", "jpg", "jpeg"], key="up_ad_key")
+    if up_ad:
+        os.makedirs("admin_uploads", exist_ok=True)
+        path_ad = os.path.join("admin_uploads", up_ad.name)
+        with open(path_ad, "wb") as f:
+            f.write(up_ad.getbuffer())
+        current_ads = load_json_list(admin_ads_filename)
+        current_ads.append(path_ad)
+        save_json_list(admin_ads_filename, current_ads)
+        st.success("✓ تمت إضافة الصورة إلى مساحات العروض الإعلانية بنجاح!")
+        st.rerun()
+
+    current_ads_list = load_json_list(admin_ads_filename)
+    if current_ads_list:
+        if st.button("🗑️ حذف آخر صورة من مساحات العروض"):
+            current_ads_list.pop()
+            save_json_list(admin_ads_filename, current_ads_list)
+            st.success("تم الحذف!")
+            st.rerun()
+
+    # رفع صور قسم "عروض تنافسية 🔥"
+    data_comp = load_json_list(admin_competetive_filename)
+    st.markdown("### 🖼️ إدارة قسم (عروض تنافسية 🔥):")
+    up_comp = st.file_uploader("اختر صورة لإضافتها لعرض الرحلات التنافسية:", type=["png", "jpg", "jpeg"], key="up_comp_key")
+    if up_comp:
+        os.makedirs("admin_uploads", exist_ok=True)
+        path_comp = os.path.join("admin_uploads", up_comp.name)
+        with open(path_comp, "wb") as f:
+            f.write(up_comp.getbuffer())
+        data_comp.append(path_comp)
+        save_json_list(admin_competetive_filename, data_comp)
+        st.success("✓ تمت إضافة الصورة إلى قسم عروض تنافسية بنجاح!")
+        st.rerun()
+
+    if data_comp:
+        if st.button("🗑️ حذف آخر صورة من عروض تنافسية"):
+            data_comp.pop()
+            save_json_list(admin_competetive_filename, data_comp)
+            st.success("تم الحذف!")
+            st.rerun()
 
     if st.button("🔒 تسجيل الخروج", use_container_width=True):
         st.session_state["logged_in"] = False
@@ -343,81 +386,67 @@ with st.expander("🔔 التسجيل في الموقع لتلقي التنبي�
 
 st.markdown("---")
 
-# --- 🖼️ مساحات العروض الإعلانية (المربعات الأربعة الأولى) ---
+# --- 📌 مساحات العروض الإعلانية (المربعات الأربعة للصور المحملة من الأدمن فقط) ---
 st.subheader("📌 مساحات العروض الإعلانية:")
+ads_saved = load_json_list(admin_ads_filename)
+
 ad_c1, ad_c2 = st.columns(2)
 with ad_c1:
-    st.markdown("""
-    <div style="background-color: #f8f9fa; border: 2px dashed #1e3d59; padding: 15px; border-radius: 10px; text-align: center;">
-        <h3>🏨 عروض الفنادق الفاخرة</h3>
-        <p>أسعار خاصة ومنافسة لأقرب الفنادق للحرمين الشريفين تشمل النقل والخدمات.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if len(ads_saved) > 0 and os.path.exists(ads_saved[0]):
+        st.image(ads_saved[0], use_column_width=True)
+    else:
+        st.info("📌 مساحة إعلانية (1) - بانتظار تحميل الصورة من لوحة الأدمن")
 with ad_c2:
-    st.markdown("""
-    <div style="background-color: #f8f9fa; border: 2px dashed #d9534f; padding: 15px; border-radius: 10px; text-align: center;">
-        <h3>✈️ رحلات الطيران المباشرة</h3>
-        <p>حجوزات مؤكدة على أفضل الخطوط الجوية من مطارات ليبيا إلى جدة والمدينة.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if len(ads_saved) > 1 and os.path.exists(ads_saved[1]):
+        st.image(ads_saved[1], use_column_width=True)
+    else:
+        st.info("📌 مساحة إعلانية (2) - بانتظار تحميل الصورة من لوحة الأدمن")
 
 ad_c3, ad_c4 = st.columns(2)
 with ad_c3:
-    st.markdown("""
-    <div style="background-color: #f8f9fa; border: 2px dashed #28a745; padding: 15px; border-radius: 10px; text-align: center;">
-        <h3>🥗 حاسبة التموين الذكية</h3>
-        <p>نظم طعامك ومقاضيك بكل سهولة وبأدق الكميات لرحلتك المباركة.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if len(ads_saved) > 2 and os.path.exists(ads_saved[2]):
+        st.image(ads_saved[2], use_column_width=True)
+    else:
+        st.info("📌 مساحة إعلانية (3) - بانتظار تحميل الصورة من لوحة الأدمن")
 with ad_c4:
-    st.markdown("""
-    <div style="background-color: #f8f9fa; border: 2px dashed #ffc107; padding: 15px; border-radius: 10px; text-align: center;">
-        <h3>📞 خدمة عملاء متواصلة</h3>
-        <p>فريقنا جاهز لدعمك والإجابة عن كافة استفساراتك طوال فترة الرحلة.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if len(ads_saved) > 3 and os.path.exists(ads_saved[3]):
+        st.image(ads_saved[3], use_column_width=True)
+    else:
+        st.info("📌 مساحة إعلانية (4) - بانتظار تحميل الصورة من لوحة الأدمن")
 
 st.markdown("---")
 
-# --- 🔄 معرض صور وعروض الرحلات (التنقل بين الصور: السابق والتالي) ---
-st.subheader("🖼️ معرض صور وعروض الرحلات (المميزة: التنقل بين الصور)")
+# --- 🔥 عروض تنافسية (التنقل بين الصور المحملة من الأدمن فقط) ---
+st.subheader("🔥 عروض تنافسية (المميزة: التنقل بين الصور)")
 
-if "ads_list" not in st.session_state:
-    st.session_state["ads_list"] = []
+comp_saved = load_json_list(admin_competetive_filename)
 
-# صور افتراضية توضيحية في حال لم يتم رفع صور بعد
-default_gallery_images = [
-    "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=800",
-    "https://images.unsplash.com/photo-1565552403565-55e1cae6ed79?w=800",
-    "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800",
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800",
-    "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800"
-]
+if "comp_index" not in st.session_state:
+    st.session_state["comp_index"] = 0
 
-all_gallery_items = st.session_state["ads_list"] if st.session_state["ads_list"] else default_gallery_images
+if comp_saved and len(comp_saved) > 0:
+    if st.session_state["comp_index"] >= len(comp_saved):
+        st.session_state["comp_index"] = 0
+        
+    nav_btn1, nav_btn2, nav_btn3 = st.columns([1, 2, 1])
+    with nav_btn1:
+        if st.button("⬅️ السابق", key="comp_prev", use_container_width=True):
+            st.session_state["comp_index"] = (st.session_state["comp_index"] - 1) % len(comp_saved)
+            st.rerun()
 
-if "gallery_index" not in st.session_state:
-    st.session_state["gallery_index"] = 0
+    with nav_btn2:
+        st.markdown(f"<div style='text-align: center; font-weight: bold; padding: 5px;'>عرض الصورة ({st.session_state['comp_index'] + 1} من {len(comp_saved)})</div>", unsafe_allow_html=True)
 
-# أزرار التنقل (السابق / التالي) تماماً كما في صورتك الثانية
-nav_btn1, nav_btn2, nav_btn3 = st.columns([1, 2, 1])
+    with nav_btn3:
+        if st.button("التالي ➡️", key="comp_next", use_container_width=True):
+            st.session_state["comp_index"] = (st.session_state["comp_index"] + 1) % len(comp_saved)
+            st.rerun()
 
-with nav_btn1:
-    if st.button("⬅️ السابق", use_container_width=True):
-        st.session_state["gallery_index"] = (st.session_state["gallery_index"] - 1) % len(all_gallery_items)
-        st.rerun()
-
-with nav_btn2:
-    st.markdown(f"<div style='text-align: center; font-weight: bold; padding: 5px;'>عرض الصورة ({st.session_state['gallery_index'] + 1} من {len(all_gallery_items)})</div>", unsafe_allow_html=True)
-
-with nav_btn3:
-    if st.button("التالي ➡️", use_container_width=True):
-        st.session_state["gallery_index"] = (st.session_state["gallery_index"] + 1) % len(all_gallery_items)
-        st.rerun()
-
-# عرض الصورة الحالية في المعرض
-current_img_to_show = all_gallery_items[st.session_state["gallery_index"]]
-st.image(current_img_to_show, caption=f"صورة العرض رقم {st.session_state['gallery_index'] + 1}", use_column_width=True)
+    current_comp_img = comp_saved[st.session_state["comp_index"]]
+    if os.path.exists(current_comp_img):
+        st.image(current_comp_img, caption=f"عرض تنافسي رقم {st.session_state['comp_index'] + 1}", use_column_width=True)
+else:
+    st.info("💡 قسم (عروض تنافسية 🔥): بانتظار قيام الأدمن برفع الصور الخاصة بالعروض من لوحة التحكم بالأعلى.")
 
 st.markdown("---")
 
@@ -568,7 +597,7 @@ st.markdown("---")
 
 # --- 💡 خانة المقترحات مع إرفاق صورة ---
 st.subheader("💡 شاركنا برأيك ومقترحاتك (مع إمكانية إرفاق صورة توضيحية)")
-with st.form("suggestion_form_v25"):
+with st.form("suggestion_form_v26"):
     s_name = st.text_input("✍️ اسم المقترح / الزائر:")
     s_type = st.selectbox("📌 نوع المقترح:", ["تعديل على الخدمات", "إضافة ميزة جديدة", "رأي أو ملاحظة عامة", "أخرى"])
     s_details = st.text_area("💬 التفاصيل والتعديلات المناسبة:")
